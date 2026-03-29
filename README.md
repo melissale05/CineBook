@@ -79,7 +79,7 @@ pip install -r requirements.txt
 
 ### 2 — Create a PostgreSQL user and configure .env
 
- Open the pgAdmin 4 app. Clcik on "servers" on the elft side bar and type password "DataDivas". Then click on Databses -> postgres -> query tool. Then run:
+ Open the pgAdmin 4 app. Clcik on "servers" on the left side bar and type password "DataDivas". Then click on Databses -> postgres -> query tool. Then run:
 
 ```sql
 -- In psql as a superuser (e.g., postgres):
@@ -89,7 +89,7 @@ ALTER USER cinebook_user CREATEDB;
 
 ```bash
 cp .env.example .env
-# Open .env and fill in DB_PASSWORD and TMDB_API_KEY (ALREADY DONE)
+# Open .env and fill in DB_PASSWORD and TMDB_API_KEY
 ```
 
 ### 3 — Initialize the database
