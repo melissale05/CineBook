@@ -62,7 +62,7 @@ CineBook/
 
 - Python 3.11+
 - PostgreSQL 15+ installed and running locally
-- A [TMDB API key](https://www.themoviedb.org/settings/api) (free account)
+- A [TMDB API key](https://www.themoviedb.org/settings/api) (free account) ** We already have the API key
 
 ### 1 — Clone and install dependencies
 
@@ -79,6 +79,8 @@ pip install -r requirements.txt
 
 ### 2 — Create a PostgreSQL user and configure .env
 
+ Open the pgAdmin 4 app. Clcik on "servers" on the elft side bar and type password "DataDivas". Then click on Databses -> postgres -> query tool. Then run:
+
 ```sql
 -- In psql as a superuser (e.g., postgres):
 CREATE USER cinebook_user WITH PASSWORD 'your_secure_password';
@@ -87,32 +89,33 @@ ALTER USER cinebook_user CREATEDB;
 
 ```bash
 cp .env.example .env
-# Open .env and fill in DB_PASSWORD and TMDB_API_KEY
+# Open .env and fill in DB_PASSWORD and TMDB_API_KEY (ALREADY DONE)
 ```
 
 ### 3 — Initialize the database
-
+Open the project terminal and run: 
 ```bash
 # Creates the 'cinebook' database and applies schema.sql
 python scripts/init_db.py
 ```
 
 ### 4 — Load synthetic seed data
-
+Open the project terminal and run: 
 ```bash
 # Inserts test users, theaters, movies, showtimes, bookings, forecasts
 python scripts/seed_db.py
 ```
 
 ### 5 — Populate live TMDB metadata
-
+Open the project terminal and run: 
 ```bash
 # Fetches popularity, rating, and trending status for each movie from TMDB
 python scripts/fetch_tmdb.py
 ```
 
 ### Verify
-
+ In pgAdmin4, go to servers -> PostgreSQL 18 -> databses. Right click databases and refresh. You will see the "Cinebook" database. Right click on cinebook, then on query tool and run: 
+ 
 ```sql
 -- Connect to cinebook and run a quick sanity check
 \c cinebook
