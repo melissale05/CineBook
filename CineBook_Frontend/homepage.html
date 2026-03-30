@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineBook | Unified Authentication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-container": "#feb528",
+                        "secondary-container": "#6d11ad",
+                        "on-surface-variant": "#bbc9cf",
+                        "inverse-on-surface": "#313030",
+                        "primary-container": "#00d4ff",
+                        "inverse-primary": "#00677e",
+                        "surface": "#131313",
+                        "outline-variant": "#3c494e",
+                        "surface-container-high": "#2a2a2a",
+                        "inverse-surface": "#e5e2e1",
+                        "primary-fixed": "#b4ebff",
+                        "on-primary": "#003642",
+                        "secondary-fixed-dim": "#e0b6ff",
+                        "secondary-fixed": "#f2daff",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary": "#432c00",
+                        "on-tertiary-fixed": "#281900",
+                        "on-secondary-fixed-variant": "#6a0baa",
+                        "surface-container": "#201f1f",
+                        "on-tertiary-container": "#6c4900",
+                        "tertiary": "#ffd9a1",
+                        "primary-fixed-dim": "#3cd7ff",
+                        "secondary": "#e0b6ff",
+                        "on-secondary-fixed": "#2e004e",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#1c1b1b",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#604100",
+                        "on-primary-container": "#00586b",
+                        "on-primary-fixed-variant": "#004e5f",
+                        "on-background": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "error-container": "#93000a",
+                        "outline": "#859398",
+                        "on-primary-fixed": "#001f27",
+                        "surface-tint": "#3cd7ff",
+                        "surface-dim": "#131313",
+                        "tertiary-fixed-dim": "#ffba3d",
+                        "on-surface": "#e5e2e1",
+                        "surface-bright": "#3a3939",
+                        "background": "#0f0f0f",
+                        "on-secondary": "#4c007d",
+                        "surface-container-highest": "#353534",
+                        "on-error": "#690005",
+                        "primary": "#a8e8ff",
+                        "on-secondary-container": "#d7a4ff",
+                        "tertiary-fixed": "#ffdeae"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0f0f0f;
+            color: #e5e2e1;
+            font-family: "Inter", sans-serif;
+            overflow-x: hidden;
+        }
+        .film-grain {
+            background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBCozbmsVrFV94hwrmFh1X501iF1duaaMBPJ9lcmFh6x-LTcR0HXo4dsgugEXpmLZl1zt5SGUJVj2Sd1Eclxd5q3aJ0pqpxdbUgRQPKXM-rzpAEH_wod8v2vZKtSu8zyDZrgzTjUNQ3ZTez26-G1DW4m3ztqUubPpQk4hIvks_opJj13fxY-3BfMMXM28czESUIY3gpR-04sPTzfK2uHGnep2WQgR_C7TueGS-0zz2V87avJkGeBU5u8IoXAoqFLtjXeATSDAXuapw);
+            opacity: 0.015;
+            pointer-events: none
+        }
+        .cinematic-shadow {
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.95);
+        }
+        .glass-panel {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(30px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+        }
+        .film-strip-bg {
+            background: linear-gradient(rgba(15, 15, 15, 0.8), rgba(15, 15, 15, 0.8)),
+                        url('https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .animated-strip {
+            position: absolute;
+            width: 100%;
+            height: 120px;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(255,255,255,0.03) 100px, rgba(255,255,255,0.03) 105px);
+            border-top: 2px dashed rgba(255,255,255,0.05);
+            border-bottom: 2px dashed rgba(255,255,255,0.05);
+            transform: rotate(-5deg);
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container film-strip-bg relative">
+<div class="fixed inset-0 film-grain z-50"></div>
+<!-- Animated background elements -->
+<div class="animated-strip top-1/4 -left-10 opacity-40"></div>
+<div class="animated-strip bottom-1/4 -right-10 opacity-30" style="transform: rotate(3deg);"></div>
+<!-- Header -->
+<header class="w-full bg-[#131313]/90 backdrop-blur-md py-6 px-12 flex justify-between items-center sticky top-0 z-40 border-b border-outline-variant/10 shadow-2xl">
+<div class="flex items-center gap-2">
+<h1 class="font-headline font-extrabold text-3xl tracking-tighter text-on-surface">CineBook</h1>
+</div>
+<div class="flex items-center gap-4">
+<!-- Whiteboard text removed -->
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center p-8 relative overflow-hidden">
+<!-- Ambient Glow Effects -->
+<div class="absolute -top-24 -left-24 w-96 h-96 rounded-full blur-[120px] bg-primary-container/10"></div>
+<div class="absolute -bottom-24 -right-24 w-96 h-96 rounded-full blur-[120px] bg-secondary-container/10"></div>
+<div class="w-full max-w-5xl flex cinematic-shadow rounded-xl overflow-hidden border border-outline-variant/15 relative z-10">
+<!-- Left Panel: Login -->
+<section class="flex-1 glass-panel p-12 relative border-r border-outline-variant/10">
+<div class="mb-10">
+<h2 class="font-headline text-4xl font-bold text-on-surface mb-2">Welcome Back</h2>
+<p class="text-on-surface-variant font-body">Sign in to your CineBook Elite account.</p>
+</div>
+<form class="space-y-6">
+<div class="space-y-1">
+<label class="block text-xs font-label text-on-surface-variant uppercase tracking-wider">Email Address</label>
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant/30 text-on-surface p-3 focus:ring-0 focus:border-primary-container transition-all placeholder:text-surface-variant" placeholder="name@cinebook.com" type="email"/>
+</div>
+<div class="space-y-1">
+<label class="block text-xs font-label text-on-surface-variant uppercase tracking-wider">Password</label>
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant/30 text-on-surface p-3 focus:ring-0 focus:border-primary-container transition-all placeholder:text-surface-variant" placeholder="••••••••" type="password"/>
+</div>
+<div class="flex items-center justify-between py-2">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="rounded-sm bg-surface-container-highest border-outline-variant text-primary-container focus:ring-offset-surface focus:ring-primary-container" type="checkbox"/>
+<span class="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember me</span>
+</label>
+<a class="text-sm text-primary transition-all hover:text-primary-container hover:underline decoration-primary/30" href="#">Forgot Password?</a>
+</div>
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-4 rounded-lg font-headline font-bold text-lg tracking-tight shadow-[0_0_20px_rgba(0,212,255,0.3)] hover:shadow-[0_0_30px_rgba(0,212,255,0.5)] transform active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3" type="submit">
+<span>Access Dashboard</span>
+<span class="material-symbols-outlined text-xl">login</span>
+</button>
+</form>
+<div class="mt-8 flex items-center gap-4 opacity-50">
+<div class="h-[1px] flex-grow bg-outline-variant"></div>
+<span class="text-xs uppercase font-label">Secure Access</span>
+<div class="h-[1px] flex-grow bg-outline-variant"></div>
+</div>
+</section>
+<!-- Right Panel: Register -->
+<section class="flex-1 p-12 relative overflow-hidden bg-[#161616]/90 backdrop-blur-md">
+<div class="relative z-10">
+<div class="mb-10">
+<h2 class="font-headline text-4xl font-bold text-on-surface mb-2">Join the Elite</h2>
+<p class="text-on-surface-variant font-body">Create your cinematic profile today.</p>
+</div>
+<form class="space-y-5">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="block text-xs font-label text-on-surface-variant uppercase tracking-wider">Full Name</label>
+<input class="w-full bg-surface-container/50 border-0 border-b border-outline-variant/30 text-on-surface p-3 focus:ring-0 focus:border-secondary transition-all placeholder:text-surface-variant" placeholder="John Wick" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="block text-xs font-label text-on-surface-variant uppercase tracking-wider">Email</label>
+<input class="w-full bg-surface-container/50 border-0 border-b border-outline-variant/30 text-on-surface p-3 focus:ring-0 focus:border-secondary transition-all placeholder:text-surface-variant" placeholder="wick@continental.com" type="email"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="block text-xs font-label text-on-surface-variant uppercase tracking-wider">Choose Password</label>
+<input class="w-full bg-surface-container/50 border-0 border-b border-outline-variant/30 text-on-surface p-3 focus:ring-0 focus:border-secondary transition-all placeholder:text-surface-variant" placeholder="••••••••" type="password"/>
+</div>
+<div class="space-y-1">
+<label class="block text-xs font-label text-on-surface-variant uppercase tracking-wider">Favorite Genre</label>
+<select class="w-full bg-surface-container border-0 border-b border-outline-variant/30 text-on-surface p-3 focus:ring-0 focus:border-secondary transition-all appearance-none cursor-pointer">
+<option>Horror</option>
+<option>Action</option>
+<option>Sci-Fi</option>
+<option>Comedy</option>
+<option>Drama</option>
+<option>Thriller</option>
+</select>
+</div>
+<div class="pt-4">
+<button class="w-full bg-surface-container-highest hover:bg-surface-variant text-on-surface border border-outline-variant/50 py-4 rounded-lg font-headline font-bold text-lg tracking-tight transition-all duration-300 transform active:scale-[0.98] group flex items-center justify-center gap-3" type="submit">
+<span>Create Account</span>
+<span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</form>
+<p class="mt-6 text-center text-xs text-on-surface-variant">
+                        By signing up, you agree to our <a class="underline hover:text-on-surface" href="#">Terms of Service</a>.
+                    </p>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer Area -->
+<footer class="w-full py-12 px-12 bg-[#0f0f0f]/80 backdrop-blur-md border-t border-outline-variant/10">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="max-w-md text-center md:text-left">
+<!-- Role-based access text removed -->
+</div>
+<div class="flex flex-col items-center md:items-end gap-4">
+<!-- Quick Access Demo section removed -->
+</div>
+</div>
+<div class="mt-4 text-center">
+<p class="text-[10px] font-label uppercase tracking-[0.3em] text-outline/40">© 2024 CineBook. All Rights Reserved.</p>
+</div>
+</footer>
+</body></html>

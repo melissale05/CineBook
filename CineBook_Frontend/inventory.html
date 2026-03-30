@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-container": "#feb528",
+              "secondary-container": "#6d11ad",
+              "on-surface-variant": "#bbc9cf",
+              "inverse-on-surface": "#313030",
+              "primary-container": "#00d4ff",
+              "inverse-primary": "#00677e",
+              "surface": "#131313",
+              "outline-variant": "#3c494e",
+              "surface-container-high": "#2a2a2a",
+              "inverse-surface": "#e5e2e1",
+              "primary-fixed": "#b4ebff",
+              "on-primary": "#003642",
+              "secondary-fixed-dim": "#e0b6ff",
+              "secondary-fixed": "#f2daff",
+              "surface-container-lowest": "#0e0e0e",
+              "on-tertiary": "#432c00",
+              "on-tertiary-fixed": "#281900",
+              "on-secondary-fixed-variant": "#6a0baa",
+              "surface-container": "#201f1f",
+              "on-tertiary-container": "#6c4900",
+              "tertiary": "#ffd9a1",
+              "primary-fixed-dim": "#3cd7ff",
+              "secondary": "#e0b6ff",
+              "on-secondary-fixed": "#2e004e",
+              "on-error-container": "#ffdad6",
+              "surface-container-low": "#1c1b1b",
+              "error": "#ffb4ab",
+              "on-tertiary-fixed-variant": "#604100",
+              "on-primary-container": "#00586b",
+              "on-primary-fixed-variant": "#004e5f",
+              "on-background": "#e5e2e1",
+              "surface-variant": "#353534",
+              "error-container": "#93000a",
+              "outline": "#859398",
+              "on-primary-fixed": "#001f27",
+              "surface-tint": "#3cd7ff",
+              "surface-dim": "#131313",
+              "tertiary-fixed-dim": "#ffba3d",
+              "on-surface": "#e5e2e1",
+              "surface-bright": "#3a3939",
+              "background": "#131313",
+              "on-secondary": "#4c007d",
+              "surface-container-highest": "#353534",
+              "on-error": "#690005",
+              "primary": "#a8e8ff",
+              "on-secondary-container": "#d7a4ff",
+              "tertiary-fixed": "#ffdeae"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0f0f0f;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(53, 53, 52, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(187, 201, 207, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neon-glow:hover {
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<nav class="bg-[#131313]/60 backdrop-blur-xl docked full-width top-0 sticky z-50 shadow-2xl shadow-black/60 flex justify-between items-center w-full px-8 py-4 max-w-none">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-[#00d4ff] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)] font-['Manrope']">CineBook</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors duration-300 font-['Manrope'] tracking-tight" href="#">Home</a>
+<a class="text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors duration-300 font-['Manrope'] tracking-tight" href="#">Movies</a>
+<a class="text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors duration-300 font-['Manrope'] tracking-tight" href="#">Dashboard</a>
+<a class="text-[#00d4ff] font-bold border-b-2 border-[#00d4ff] pb-1 font-['Manrope'] tracking-tight" href="#">Inventory</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-[#353534]/40 transition-all duration-300 rounded-full scale-95 active:scale-90 text-[#bbc9cf]">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-[#353534]/40 transition-all duration-300 rounded-full scale-95 active:scale-90 text-[#bbc9cf]">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+<button class="p-2 hover:bg-[#353534]/40 transition-all duration-300 rounded-full scale-95 active:scale-90 text-[#bbc9cf]">
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+</nav>
+<main class="flex-grow px-8 py-12 max-w-7xl mx-auto w-full">
+<header class="mb-12">
+<h1 class="font-headline text-5xl font-extrabold tracking-tighter text-on-surface mb-2">Inventory Management</h1>
+<p class="text-on-surface-variant font-body">Global showtime logistics and yield optimization console.</p>
+</header>
+<section class="mb-16">
+<div class="glass-panel p-8 rounded-xl">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<h2 class="font-headline text-xl font-bold tracking-tight">Add New Showtime</h2>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1">Movie</label>
+<select class="bg-surface-container border-0 border-b-2 border-outline-variant/30 text-on-surface focus:ring-0 focus:border-primary-container py-3 px-4 rounded-t-lg transition-all">
+<option>Neon Nights: Tokyo</option>
+<option>Shadow of the Colossus</option>
+<option>The Silent Void</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1">Theater</label>
+<select class="bg-surface-container border-0 border-b-2 border-outline-variant/30 text-on-surface focus:ring-0 focus:border-primary-container py-3 px-4 rounded-t-lg transition-all">
+<option>IMAX Hall A</option>
+<option>Dolby Cinema 4</option>
+<option>Luxe Suite 1</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1">Date</label>
+<input class="bg-surface-container border-0 border-b-2 border-outline-variant/30 text-on-surface focus:ring-0 focus:border-primary-container py-3 px-4 rounded-t-lg transition-all" type="date"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1">Start Time</label>
+<input class="bg-surface-container border-0 border-b-2 border-outline-variant/30 text-on-surface focus:ring-0 focus:border-primary-container py-3 px-4 rounded-t-lg transition-all" type="time"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1">Base Price</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">$</span>
+<input class="w-full bg-surface-container border-0 border-b-2 border-outline-variant/30 text-on-surface focus:ring-0 focus:border-primary-container py-3 pl-8 pr-4 rounded-t-lg transition-all" step="0.01" type="number" value="18.50"/>
+</div>
+</div>
+<div class="md:col-span-5 flex justify-end gap-4 mt-4">
+<button class="px-6 py-3 font-bold text-sm bg-surface-variant text-on-surface-variant hover:text-on-surface rounded-lg transition-all flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-lg">trending_up</span>
+                            Adjust Price per Forecast
+                        </button>
+<button class="px-8 py-3 font-bold text-sm bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-lg neon-glow transition-all flex items-center gap-2" type="submit">
+<span class="material-symbols-outlined text-lg">add</span>
+                            Add Showtime
+                        </button>
+</div>
+</form>
+</div>
+</section>
+<section>
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline text-3xl font-extrabold tracking-tight">Active Showtimes</h2>
+<p class="text-on-surface-variant">Real-time occupancy and occupancy prediction models.</p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 glass-panel rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 glass-panel rounded-lg text-on-surface-variant hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<div class="glass-panel rounded-xl overflow-hidden shadow-2xl">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Movie</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Theater</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Date &amp; Time</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant text-center">Current Occupancy</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant text-center">Predicted</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-high/30 transition-colors group">
+<td class="px-6 py-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-16 rounded overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="cinematic movie poster of a dark futuristic city with neon lights and rainy streets, cinematic composition" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrv4kcIvUdpI9VJEPnRWRjq-ZDUqm_2Ox0Syk9A874BXlH-jOvEli2jKPqzLhFZcBrnvFuQbMfwzkEr6ljmTjeI81MOwXazNPtvTslDtAY5bRYJUflxl0q8-RIGIX9q_JufQY3SmNxRdYBCofQTo5FnvGbpw5O4vPRR5rRRjGHHBr79xw-wsfUsoDLT4K3vWi_V7L9Kd8GS_z9bdcuRaF9CDRgTd1BVd3LIsUYbwvEOGqsmhJ6lwBAiJnK6OqqAtncXH943lv0wZc"/>
+</div>
+<span class="font-bold text-on-surface">Neon Nights: Tokyo</span>
+</div>
+</td>
+<td class="px-6 py-6 text-on-surface-variant">IMAX Hall A</td>
+<td class="px-6 py-6">
+<div class="flex flex-col">
+<span class="text-on-surface">Oct 24, 2024</span>
+<span class="text-xs text-on-surface-variant">21:45 PM</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col items-center gap-1">
+<div class="w-32 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 82%;"></div>
+</div>
+<span class="text-xs font-medium text-primary-container">82% (246/300)</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col items-center gap-1">
+<span class="text-sm font-bold text-tertiary-container">98%</span>
+<span class="text-[10px] uppercase tracking-tighter text-on-surface-variant">High Confidence</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex justify-end gap-3">
+<button class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/50 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                                        Edit Price
+                                    </button>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded bg-error-container/20 text-xs font-bold text-error hover:bg-error-container/40 transition-colors">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">flag</span>
+                                        Flag
+                                    </button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors group">
+<td class="px-6 py-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-16 rounded overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="cinematic landscape of a giant stone colossus standing in a foggy valley, atmospheric fantasy mood" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7WvSInSbTpoiHdN2Yy_lZhRjS7FlExJO7iS9K3KfK8j4arW7wrfOLWAbaY9z93ycm1svRDiDG9p3MSrrwjJdgq-HFXTpnoAb0O1gJJE_DJc1YvFdG2Nl91n_W5_FqQ7_PshosdjPdmle-e46Rnq8-SSw_uwzzW9XKNv1vuVgBUXmQC6Q9j00HJM3waOts2xvN9Sh7nz2ksAOZPbYMsF25vS-szmIiYNnZ22Izd63zkot5EAJEPS9NYtrftxLf1TwL3JkusuFioJw"/>
+</div>
+<span class="font-bold text-on-surface">Shadow of the Colossus</span>
+</div>
+</td>
+<td class="px-6 py-6 text-on-surface-variant">Dolby Cinema 4</td>
+<td class="px-6 py-6">
+<div class="flex flex-col">
+<span class="text-on-surface">Oct 24, 2024</span>
+<span class="text-xs text-on-surface-variant">18:00 PM</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col items-center gap-1">
+<div class="w-32 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 45%;"></div>
+</div>
+<span class="text-xs font-medium text-on-surface-variant">45% (90/200)</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col items-center gap-1">
+<span class="text-sm font-bold text-on-surface-variant">52%</span>
+<span class="text-[10px] uppercase tracking-tighter text-on-surface-variant">Steady</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex justify-end gap-3">
+<button class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/50 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                                        Edit Price
+                                    </button>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/20 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-sm">flag</span>
+                                        Flag
+                                    </button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors group">
+<td class="px-6 py-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-16 rounded overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="dramatic space nebula with deep blues and purples, glowing stars and cosmic dust, high contrast cinematic photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIU-9PRnuOtU0Zx0Or3DhcRhVorHnKYiqBeG6PsogtX7WRYqPEQSYQNLgGBoiA9HzSHCi-i41Ie-eXBjMp3OrN9L57A9DA3dT-OBlN__NsKlfaG1Qv7zccs_o-ugOnwnHdQulw1m6MGk9RRaxw7yZP2OgZz8Q6_FtIHNTZq1suYvcCxmQH7u-X1xhCjOllj2nYzi20cCQaK_lNWXI0R804-t3SuHHqke5dNvC0dmFbiPaPBh6TVF4bB8JqN3ZuWdRVPJu0o2WVt_Y"/>
+</div>
+<span class="font-bold text-on-surface">The Silent Void</span>
+</div>
+</td>
+<td class="px-6 py-6 text-on-surface-variant">Luxe Suite 1</td>
+<td class="px-6 py-6">
+<div class="flex flex-col">
+<span class="text-on-surface">Oct 25, 2024</span>
+<span class="text-xs text-on-surface-variant">23:00 PM</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col items-center gap-1">
+<div class="w-32 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 15%;"></div>
+</div>
+<span class="text-xs font-medium text-on-surface-variant">15% (12/80)</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col items-center gap-1">
+<span class="text-sm font-bold text-error">18%</span>
+<span class="text-[10px] uppercase tracking-tighter text-error">Underperforming</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex justify-end gap-3">
+<button class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/50 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                                        Edit Price
+                                    </button>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/20 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-sm">flag</span>
+                                        Flag
+                                    </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="bg-surface-container-low/50 px-6 py-4 flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">Showing 3 of 124 showtimes</span>
+<div class="flex gap-4">
+<button class="text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Previous</button>
+<button class="text-xs font-bold uppercase tracking-widest text-primary">Next Page</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="w-full py-12 mt-auto border-t border-[#353534]/15 bg-[#0e0e0e] flex flex-col items-center justify-center gap-6 px-4">
+<div class="flex gap-8">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all duration-300" href="#">Customer Portal</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all duration-300 underline" href="#">Admin Dashboard</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all duration-300" href="#">Terms of Service</a>
+</div>
+<p class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] opacity-80">© 2024 CineBook Digital Proscenium</p>
+</footer>
+</body></html>

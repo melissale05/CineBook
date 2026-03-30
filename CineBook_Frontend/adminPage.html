@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineBook | Predictive Demand Forecasting Engine</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-container": "#feb528",
+                        "secondary-container": "#6d11ad",
+                        "on-surface-variant": "#bbc9cf",
+                        "inverse-on-surface": "#313030",
+                        "primary-container": "#00d4ff",
+                        "inverse-primary": "#00677e",
+                        "surface": "#131313",
+                        "outline-variant": "#3c494e",
+                        "surface-container-high": "#2a2a2a",
+                        "inverse-surface": "#e5e2e1",
+                        "primary-fixed": "#b4ebff",
+                        "on-primary": "#003642",
+                        "secondary-fixed-dim": "#e0b6ff",
+                        "secondary-fixed": "#f2daff",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary": "#432c00",
+                        "on-tertiary-fixed": "#281900",
+                        "on-secondary-fixed-variant": "#6a0baa",
+                        "surface-container": "#201f1f",
+                        "on-tertiary-container": "#6c4900",
+                        "tertiary": "#ffd9a1",
+                        "primary-fixed-dim": "#3cd7ff",
+                        "secondary": "#e0b6ff",
+                        "on-secondary-fixed": "#2e004e",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#1c1b1b",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#604100",
+                        "on-primary-container": "#00586b",
+                        "on-primary-fixed-variant": "#004e5f",
+                        "on-background": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "error-container": "#93000a",
+                        "outline": "#859398",
+                        "on-primary-fixed": "#001f27",
+                        "surface-tint": "#3cd7ff",
+                        "surface-dim": "#131313",
+                        "tertiary-fixed-dim": "#ffba3d",
+                        "on-surface": "#e5e2e1",
+                        "surface-bright": "#3a3939",
+                        "background": "#0f0f0f",
+                        "on-secondary": "#4c007d",
+                        "surface-container-highest": "#353534",
+                        "on-error": "#690005",
+                        "primary": "#a8e8ff",
+                        "on-secondary-container": "#d7a4ff",
+                        "tertiary-fixed": "#ffdeae"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-glass {
+            background: rgba(19, 19, 19, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        .chart-grid {
+            background-image: radial-gradient(circle at 1px 1px, #353534 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .purple-glow {
+            text-shadow: 0 0 15px rgba(157, 78, 221, 0.6);
+            color: #9d4edd;
+        }
+    </style>
+</head>
+<body class="bg-[#0f0f0f] text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation (Shell Component) -->
+<nav class="fixed top-0 z-50 w-full bg-[#131313]/60 backdrop-blur-xl shadow-2xl shadow-black/60 flex justify-between items-center px-8 py-4 max-w-none">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-[#00d4ff] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)] font-headline">CineBook</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-headline tracking-tight text-[#00d4ff] font-bold border-b-2 border-[#00d4ff] pb-1 transition-all duration-300" href="#">Dashboard</a>
+<a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors duration-300" href="#">Inventory</a>
+<a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors duration-300" href="#">Users</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center bg-[#353534]/40 rounded-full px-4 py-2 hover:bg-[#353534]/60 transition-all duration-300 group">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface w-48 placeholder:text-on-surface-variant/50" placeholder="Search analytics..." type="text"/>
+</div>
+<button class="p-2 hover:bg-[#353534]/40 rounded-full transition-all duration-300 scale-95 active:scale-90">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-[#353534]/40 rounded-full transition-all duration-300 scale-95 active:scale-90">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="account_circle">account_circle</span>
+</button>
+<button class="p-2 hover:bg-[#353534]/40 rounded-full transition-all duration-300 scale-95 active:scale-90 flex items-center gap-2 group">
+<span class="material-symbols-outlined text-[#bbc9cf] group-hover:text-error" data-icon="logout">logout</span>
+<span class="text-xs font-bold uppercase tracking-widest text-[#bbc9cf] group-hover:text-error transition-colors">Logout</span>
+</button>
+</div>
+</nav>
+<!-- Sidebar (Shell Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-24 bg-[#0e0e0e] shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-40 hidden xl:flex flex-col gap-2">
+<div class="px-6 mb-6">
+<h3 class="text-lg font-bold text-[#e5e2e1] font-headline">CineBook Elite</h3>
+<p class="text-xs text-on-surface-variant font-medium">Management Console</p>
+</div>
+<nav class="flex flex-col h-full gap-2">
+<a class="bg-gradient-to-r from-[#00d4ff]/20 to-transparent text-[#00d4ff] border-l-4 border-[#00d4ff] px-6 py-3 flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] text-sm font-medium">Dashboard</span>
+</a>
+<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="movie">movie</span>
+<span class="font-['Inter'] text-sm font-medium">Action</span>
+</a>
+<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="rocket_launch">rocket_launch</span>
+<span class="font-['Inter'] text-sm font-medium">Sci-Fi</span>
+</a>
+<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="theaters">theaters</span>
+<span class="font-['Inter'] text-sm font-medium">Drama</span>
+</a>
+<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-['Inter'] text-sm font-medium">Alerts</span>
+</a>
+<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-['Inter'] text-sm font-medium">Users</span>
+</a>
+<div class="mt-auto p-6">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 rounded-lg font-bold text-sm hover:brightness-110 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)]">
+                    Book Now
+                </button>
+</div>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="xl:pl-64 pt-24 pb-12 min-h-screen">
+<div class="max-w-7xl mx-auto px-8">
+<!-- Header Section -->
+<header class="mb-12 relative">
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-secondary-container/10 rounded-full blur-[120px]"></div>
+<h1 class="text-4xl md:text-5xl font-extrabold font-headline tracking-tight mb-2">
+                    Predictive <span class="purple-glow">Demand Forecasting</span> Engine
+                </h1>
+<p class="text-on-surface-variant font-medium tracking-wide">AI-driven occupancy modeling and revenue optimization metrics.</p>
+</header>
+<!-- Analytics Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+<!-- Chart 1: Bar Chart -->
+<div class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h2 class="text-lg font-bold font-headline mb-1">Predicted Occupancy vs Total Capacity</h2>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest">Global Theater Network • Live</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+<span class="text-[10px] font-bold text-on-surface-variant">PREDICTED</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-error shadow-[0_0_10px_rgba(255,180,171,0.5)]"></div>
+<span class="text-[10px] font-bold text-on-surface-variant">CAPACITY</span>
+</div>
+</div>
+</div>
+<div class="h-64 flex items-end justify-between gap-4 chart-grid relative">
+<!-- Mock Bars -->
+<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
+<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
+<div class="w-full bg-emerald-500 rounded-t h-[60%] z-10 relative"></div>
+<span class="text-[10px] text-on-surface-variant mt-2">Mon</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
+<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
+<div class="w-full bg-emerald-500 rounded-t h-[75%] z-10 relative"></div>
+<span class="text-[10px] text-on-surface-variant mt-2">Tue</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
+<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
+<div class="w-full bg-emerald-500 rounded-t h-[92%] z-10 relative"></div>
+<span class="text-[10px] text-on-surface-variant mt-2">Wed</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
+<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
+<div class="w-full bg-emerald-500 rounded-t h-[85%] z-10 relative"></div>
+<span class="text-[10px] text-on-surface-variant mt-2">Thu</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
+<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
+<div class="w-full bg-emerald-500 rounded-t h-[98%] z-10 relative"></div>
+<span class="text-[10px] text-on-surface-variant mt-2 text-error font-bold">Fri</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
+<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
+<div class="w-full bg-emerald-500 rounded-t h-[95%] z-10 relative"></div>
+<span class="text-[10px] text-on-surface-variant mt-2">Sat</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
+<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
+<div class="w-full bg-emerald-500 rounded-t h-[70%] z-10 relative"></div>
+<span class="text-[10px] text-on-surface-variant mt-2">Sun</span>
+</div>
+</div>
+</div>
+<!-- Chart 2: Line Chart -->
+<div class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h2 class="text-lg font-bold font-headline mb-1">Predicted Revenue Trend</h2>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest">Quarterly Forecasts • Aggregated</p>
+</div>
+<div class="bg-[#353534]/40 px-3 py-1 rounded text-[10px] font-bold text-primary tracking-tighter uppercase border border-primary/20">Target: $4.2M</div>
+</div>
+<div class="h-64 chart-grid relative flex items-end">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 400 200">
+<defs>
+<lineargradient id="gradient-line" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00d4ff" stop-opacity="0.5"></stop>
+<stop offset="100%" stop-color="#00d4ff" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,180 Q50,160 100,100 T200,80 T300,40 T400,10 V200 H0 Z" fill="url(#gradient-line)"></path>
+<path class="drop-shadow-[0_0_10px_rgba(0,212,255,0.8)]" d="M0,180 Q50,160 100,100 T200,80 T300,40 T400,10" fill="none" stroke="#00d4ff" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<div class="absolute bottom-0 w-full flex justify-between px-2 pb-2">
+<span class="text-[10px] text-on-surface-variant">Wk 01</span>
+<span class="text-[10px] text-on-surface-variant">Wk 04</span>
+<span class="text-[10px] text-on-surface-variant">Wk 08</span>
+<span class="text-[10px] text-on-surface-variant">Wk 12</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Smart Alerts Panel -->
+<section class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-error/10 rounded-lg">
+<span class="material-symbols-outlined text-error" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h2 class="text-xl font-bold font-headline">Smart Capacity Alerts</h2>
+<p class="text-xs text-on-surface-variant tracking-widest uppercase">Action Required • AI Recommendations</p>
+</div>
+</div>
+<button class="text-xs font-bold text-primary hover:underline transition-all">Dismiss All</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Alert Card 1 -->
+<div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 border-error hover:bg-surface-container-high transition-all duration-300 relative group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-error/20 text-error text-[10px] font-black px-2 py-1 rounded">CRITICAL</div>
+<span class="text-[10px] text-on-surface-variant font-bold">Today, 20:00</span>
+</div>
+<h3 class="text-lg font-bold font-headline mb-1">Oppenheimer</h3>
+<p class="text-sm text-on-surface-variant mb-4">Predicted occupancy reaching <span class="text-error font-bold">92%</span> across all IMAX screens.</p>
+<div class="flex items-center justify-between mt-auto">
+<span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: ADD SCREENING</span>
+<button class="bg-error text-on-error p-1.5 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+</div>
+</div>
+<!-- Alert Card 2 -->
+<div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 border-error hover:bg-surface-container-high transition-all duration-300 relative group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-error/20 text-error text-[10px] font-black px-2 py-1 rounded">CRITICAL</div>
+<span class="text-[10px] text-on-surface-variant font-bold">Tomorrow, 14:00</span>
+</div>
+<h3 class="text-lg font-bold font-headline mb-1">Dune: Part Two</h3>
+<p class="text-sm text-on-surface-variant mb-4">Private booking conflict detected. Predicted demand <span class="text-error font-bold">exceeds</span> available seats.</p>
+<div class="flex items-center justify-between mt-auto">
+<span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: UPGRADE THEATER</span>
+<button class="bg-error text-on-error p-1.5 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
+</button>
+</div>
+</div>
+<!-- Alert Card 3 -->
+<div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 border-tertiary-container hover:bg-surface-container-high transition-all duration-300 relative group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-tertiary-container/20 text-tertiary-container text-[10px] font-black px-2 py-1 rounded">WARNING</div>
+<span class="text-[10px] text-on-surface-variant font-bold">Sun, 18:00</span>
+</div>
+<h3 class="text-lg font-bold font-headline mb-1">The Creator</h3>
+<p class="text-sm text-on-surface-variant mb-4">Low conversion for VIP Lounge. Predictive engine suggests <span class="text-tertiary-container font-bold">bundle pricing</span>.</p>
+<div class="flex items-center justify-between mt-auto">
+<span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: APPLY DISCOUNT</span>
+<button class="bg-tertiary-container text-on-tertiary p-1.5 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="local_offer">local_offer</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer (Shell Component) -->
+<footer class="w-full py-12 mt-auto border-t border-[#353534]/15 bg-[#0e0e0e] flex flex-col items-center justify-center gap-6 px-4">
+<div class="flex flex-wrap justify-center gap-8 mb-4">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all duration-300" href="#">Customer Portal</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#00d4ff] underline transition-all duration-300" href="#">Admin Dashboard</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all duration-300" href="#">Terms of Service</a>
+</div>
+<p class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] text-[#bbc9cf]/60">© 2024 CineBook Digital Proscenium</p>
+</footer>
+</body></html>
