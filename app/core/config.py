@@ -17,7 +17,7 @@ class Settings:
     DB_PORT: int = int(os.getenv("DB_PORT", "5432"))
     DB_NAME: str = os.getenv("DB_NAME", "cinebook")
     DB_USER: str = os.getenv("DB_USER", "cinebook_user")
-    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
+    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "DataDivas")
 
     # --- TMDB ---
     TMDB_API_KEY: str = os.getenv("TMDB_API_KEY", "")
