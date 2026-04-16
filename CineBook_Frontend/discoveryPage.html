@@ -447,4 +447,175 @@
 </div>
 <p class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#bbc9cf] opacity-60">© 2024 CineBook Digital Proscenium</p>
 </footer>
+
+<script>
+const API = 'http://localhost:8000/api';
+const token = localStorage.getItem('cb_token');
+const role  = localStorage.getItem('cb_role');
+const name  = localStorage.getItem('cb_name');
+const favGenre = localStorage.getItem('cb_favorite_genre') || '';
+
+if (!token) { window.location.href = 'homepage.html'; }
+
+// Auth header helper
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+}
+
+// ── Nav wiring ──────────────────────────────────────────────────────────────
+const navLinks = document.querySelectorAll('nav .hidden.md\\:flex a');
+if (navLinks[0]) navLinks[0].href = 'discoveryPage.html';
+if (navLinks[1]) navLinks[1].href = 'discoveryPage.html';
+if (navLinks[2]) { navLinks[2].href = role === 'admin' ? 'adminPage.html' : 'userProfile.html'; }
+if (navLinks[3]) { navLinks[3].style.display = role === 'admin' ? '' : 'none'; navLinks[3].href = 'inventory.html'; }
+
+// profile & logout icon buttons
+const iconBtns = document.querySelectorAll('nav .flex.gap-4.items-center button');
+if (iconBtns[1]) iconBtns[1].addEventListener('click', () => window.location.href = 'userProfile.html');
+if (iconBtns[2]) iconBtns[2].addEventListener('click', () => { localStorage.clear(); window.location.href = 'homepage.html'; });
+
+// Sidebar loyalty display
+const sidebarCard = document.querySelector('aside .bg-surface-container');
+if (sidebarCard) {
+  sidebarCard.querySelector('p.text-primary').textContent = name || 'Guest';
+  sidebarCard.querySelector('.bg-primary-container').addEventListener('click', () => window.location.href = 'discoveryPage.html');
+}
+
+// ── Genre filter sidebar ────────────────────────────────────────────────────
+let activeGenre = null;
+const genreBtns = document.querySelectorAll('aside .flex.flex-col.gap-1 button');
+genreBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const g = btn.textContent.trim();
+    activeGenre = activeGenre === g ? null : g;
+    loadMovies(activeGenre);
+  });
+});
+
+// ── Search ──────────────────────────────────────────────────────────────────
+const searchInput = document.querySelector('nav input[type="text"]');
+if (searchInput) {
+  let searchTimeout;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => loadMovies(activeGenre, searchInput.value.trim()), 400);
+  });
+}
+
+// ── Recommendations ─────────────────────────────────────────────────────────
+const recSection = document.querySelector('section.py-12.px-8');
+const recContainer = recSection ? recSection.querySelector('.flex.gap-6') : null;
+const recSubtitle = recSection ? recSection.querySelector('p') : null;
+
+if (recSubtitle && favGenre) recSubtitle.innerHTML = `Because you love <span class="text-secondary font-semibold italic">${favGenre}</span>`;
+
+async function loadRecommendations() {
+  if (!recContainer) return;
+  try {
+    const res = await fetch(`${API}/recommendations`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const recs = await res.json();
+    if (!recs.length) return;
+    recContainer.innerHTML = recs.map(r => {
+      const stars = Math.round((r.tmdb_rating || 5) / 2);
+      const filled = '★'.repeat(stars);
+      const empty  = '☆'.repeat(5 - stars);
+      const poster = r.poster_url || `https://via.placeholder.com/280x420/1a1a2e/00d4ff?text=${encodeURIComponent(r.title)}`;
+      return `
+        <div class="min-w-[200px] group snap-start cursor-pointer" onclick="goToMovie(${r.movie_id})">
+          <div class="relative aspect-[2/3] rounded-xl overflow-hidden mb-3 shadow-xl shadow-black/40">
+            <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="${poster}" alt="${r.title}" onerror="this.src='https://via.placeholder.com/280x420/1a1a2e/00d4ff?text=No+Poster'"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+              <button class="w-full py-2 bg-primary-container text-on-primary font-bold text-xs rounded-lg">View Showtimes</button>
+            </div>
+            <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-primary border border-primary/20">
+              ${r.tmdb_rating ? r.tmdb_rating.toFixed(1) : '?'} ★
+            </div>
+            ${r.trending_status === 'trending' ? '<div class="absolute top-2 left-2 bg-primary-container text-on-primary text-[9px] font-black px-2 py-0.5 rounded">TRENDING</div>' : ''}
+          </div>
+          <h3 class="font-bold text-on-surface mb-1 group-hover:text-primary transition-colors text-sm truncate">${r.title}</h3>
+          <div class="flex items-center justify-between text-[11px] text-on-surface-variant">
+            <span>${r.genre} • Rank #${r.rank}</span>
+            <span class="text-tertiary">${filled}${empty}</span>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { console.warn('Recommendations unavailable', e); }
+}
+
+// ── Movie Gallery ────────────────────────────────────────────────────────────
+const galleryGrid = document.querySelector('.grid.grid-cols-2');
+
+async function loadMovies(genre = null, search = '') {
+  if (!galleryGrid) return;
+  galleryGrid.innerHTML = '<div class="col-span-4 text-center text-on-surface-variant py-12">Loading movies…</div>';
+  try {
+    let url = `${API}/movies`;
+    if (genre) url += `?genre=${encodeURIComponent(genre)}`;
+    const res = await fetch(url, { headers: authHeaders() });
+    const movies = await res.json();
+    const filtered = search ? movies.filter(m => m.title.toLowerCase().includes(search.toLowerCase()) || (m.genre || '').toLowerCase().includes(search.toLowerCase())) : movies;
+    if (!filtered.length) { galleryGrid.innerHTML = '<div class="col-span-4 text-center text-on-surface-variant py-12">No movies found.</div>'; return; }
+    galleryGrid.innerHTML = filtered.map(m => {
+      const poster = m.poster_url || `https://via.placeholder.com/300x450/1a1a2e/00d4ff?text=${encodeURIComponent(m.title)}`;
+      const rating = m.tmdb_rating ? m.tmdb_rating.toFixed(1) : '—';
+      const trending = m.trending_status === 'trending' ? '<div class="absolute top-3 left-3 bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded">TRENDING</div>' : '';
+      return `
+        <div class="group cursor-pointer" onclick="goToMovie(${m.movie_id})">
+          <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 shadow-lg transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-primary/20">
+            <img class="w-full h-full object-cover" src="${poster}" alt="${m.title}" onerror="this.src='https://via.placeholder.com/300x450/1a1a2e/00d4ff?text=No+Poster'"/>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 text-center">
+              <span class="text-primary-container text-xs font-bold mb-2">NOW PLAYING</span>
+              <p class="text-[10px] text-on-surface-variant mb-4 line-clamp-3">${(m.description || '').substring(0, 100)}…</p>
+              <button class="w-full py-2 bg-primary-container text-on-primary font-black text-xs rounded-lg uppercase tracking-widest">Book Now</button>
+            </div>
+            ${trending}
+          </div>
+          <h4 class="font-bold text-sm text-on-surface truncate">${m.title}</h4>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-tertiary-fixed-dim text-xs font-bold">★ ${rating}</span>
+            <span class="text-[10px] text-on-surface-variant">• ${m.genre}</span>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { galleryGrid.innerHTML = '<div class="col-span-4 text-center text-error py-12">Failed to load movies.</div>'; }
+}
+
+// ── Hero banner ──────────────────────────────────────────────────────────────
+async function loadHero() {
+  try {
+    const res = await fetch(`${API}/movies`, { headers: authHeaders() });
+    const movies = await res.json();
+    const trending = movies.find(m => m.trending_status === 'trending') || movies[0];
+    if (!trending) return;
+    const heroTitle = document.querySelector('section.relative.w-full h1');
+    const heroDesc  = document.querySelector('section.relative.w-full p.font-body');
+    const heroBg    = document.querySelector('section.relative.w-full img');
+    if (heroTitle) { const parts = trending.title.split(' '); heroTitle.innerHTML = parts.slice(0,-1).join(' ') + '<br/><span class="text-primary-container drop-shadow-[0_0_15px_rgba(0,212,255,0.3)]">' + (parts.at(-1) || '') + '</span>'; }
+    if (heroDesc) heroDesc.textContent = (trending.description || '').substring(0, 150) + '…';
+    if (heroBg && trending.poster_url) heroBg.src = trending.poster_url;
+    // Wire "View Details" button → movie showtimes
+    const viewBtn = document.querySelector('section.relative.w-full button:last-of-type');
+    if (viewBtn) viewBtn.addEventListener('click', () => goToMovie(trending.movie_id));
+  } catch(e) {}
+}
+
+function goToMovie(movieId) {
+  // Navigate to seating with first available showtime for this movie
+  fetch(`${API}/movies/${movieId}/showtimes`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(shows => {
+      if (shows && shows.length) {
+        window.location.href = `seating.html?showtime_id=${shows[0].showtime_id}&movie_id=${movieId}`;
+      } else {
+        alert('No upcoming showtimes for this movie.');
+      }
+    }).catch(() => alert('Error loading showtimes.'));
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadHero();
+loadMovies();
+if (role === 'customer') loadRecommendations();
+</script>
 </body></html>

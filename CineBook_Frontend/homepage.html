@@ -226,4 +226,92 @@
 <p class="text-[10px] font-label uppercase tracking-[0.3em] text-outline/40">© 2024 CineBook. All Rights Reserved.</p>
 </div>
 </footer>
+
+<script>
+const API = 'http://localhost:8000/api';
+
+// If already logged in, redirect to appropriate page
+(function() {
+  const token = localStorage.getItem('cb_token');
+  const role  = localStorage.getItem('cb_role');
+  if (token && role) {
+    window.location.href = role === 'admin' ? '/ui/adminPage.html' : '/ui/discoveryPage.html';
+  }
+})();
+
+function showError(msg, container) {
+  let el = container.querySelector('.cb-error');
+  if (!el) { el = document.createElement('p'); el.className = 'cb-error text-error text-sm mt-2'; container.appendChild(el); }
+  el.textContent = msg;
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+const loginForm = document.querySelector('section:first-child form');
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email    = loginForm.querySelector('input[type="email"]').value.trim();
+  const password = loginForm.querySelector('input[type="password"]').value;
+  const btn      = loginForm.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.detail || 'Login failed', loginForm); btn.disabled = false; btn.innerHTML = '<span>Access Dashboard</span><span class="material-symbols-outlined text-xl">login</span>'; return; }
+
+    localStorage.setItem('cb_token',          data.token);
+    localStorage.setItem('cb_user_id',        data.user_id);
+    localStorage.setItem('cb_name',           data.name);
+    localStorage.setItem('cb_email',          data.email);
+    localStorage.setItem('cb_role',           data.role);
+    localStorage.setItem('cb_favorite_genre', data.favorite_genre || '');
+    localStorage.setItem('cb_loyalty_points', data.loyalty_points || 0);
+
+    window.location.href = data.role === 'admin' ? '/ui/adminPage.html' : '/ui/discoveryPage.html';
+  } catch (err) {
+    showError('Network error — is the server running?', loginForm);
+    btn.disabled = false; btn.innerHTML = '<span>Access Dashboard</span><span class="material-symbols-outlined text-xl">login</span>';
+  }
+});
+
+// ── REGISTER ───────────────────────────────────────────────────────────────
+const registerForm = document.querySelectorAll('form')[1];
+registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const inputs = registerForm.querySelectorAll('input');
+  const name     = inputs[0].value.trim();
+  const email    = inputs[1].value.trim();
+  const password = inputs[2].value;
+  const genre    = registerForm.querySelector('select').value;
+  const btn      = registerForm.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, favorite_genre: genre }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.detail || 'Registration failed', registerForm); btn.disabled = false; btn.innerHTML = '<span>Create Account</span><span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>'; return; }
+
+    localStorage.setItem('cb_token',          data.token);
+    localStorage.setItem('cb_user_id',        data.user_id);
+    localStorage.setItem('cb_name',           data.name);
+    localStorage.setItem('cb_email',          data.email);
+    localStorage.setItem('cb_role',           data.role);
+    localStorage.setItem('cb_favorite_genre', data.favorite_genre || '');
+    localStorage.setItem('cb_loyalty_points', data.loyalty_points || 0);
+
+    window.location.href = '/ui/discoveryPage.html';
+  } catch (err) {
+    showError('Network error — is the server running?', registerForm);
+    btn.disabled = false; btn.innerHTML = '<span>Create Account</span><span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>';
+  }
+});
+</script>
 </body></html>

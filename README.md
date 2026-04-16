@@ -1,9 +1,119 @@
 # CineBook
 
-A web-based movie theater management and ticket booking application with dynamic demand pricing and smart recommendations.
+A full-stack movie theater management and ticket booking application with dynamic demand pricing, smart recommendations, and admin demand forecasting.
 
-**Course:** Database Systems
-**Team:** Melissa Le · Fanta Amouzougan · Vanohra Gaspard
+**Course:** Database Systems — Project Stage 4  
+**Team:** Melissa Le · Fanta Amouzougan · Vanohra Gaspard  
+**Repo:** github.com/melissale05/CineBook
+
+---
+
+## What Was Built
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
+| 1 — DB Init | **Complete** | schema.sql, seed.sql, init scripts, TMDB fetch |
+| 2 — Backend API | **Complete** | FastAPI app, auth, CRUD endpoints, dynamic pricing |
+| 3 — Advanced SQL | **Complete** | Stored procedures, window functions, triggers, forecasting |
+| 4 — Frontend | **Complete** | 6-page HTML/JS UI fully connected to backend |
+| 5 — Testing/Demo | **Complete** | Demo script, validation tests, run instructions |
+
+---
+
+## Quick Start (Run Locally for Demo)
+
+### Prerequisites
+
+- Python 3.11+
+- PostgreSQL 15+ running locally
+- A `cinebook_user` database user (see below)
+
+### 1 — Clone & install dependencies
+
+```bash
+git clone https://github.com/melissale05/CineBook
+cd CineBook
+python -m venv venv
+source venv/bin/activate       # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2 — Create PostgreSQL user
+
+In pgAdmin 4 or psql (as superuser):
+
+```sql
+CREATE USER cinebook_user WITH PASSWORD 'DataDivas';
+ALTER USER cinebook_user CREATEDB;
+```
+
+The `.env` file is already configured with these credentials.
+
+### 3 — Initialize the database
+
+```bash
+# Creates the cinebook database, applies schema + advanced SQL
+python scripts/init_db.py
+```
+
+### 4 — Load seed data
+
+```bash
+# Inserts test users, theaters, movies, showtimes, bookings, forecasts
+# Also hashes all passwords with bcrypt
+python scripts/seed_db.py
+```
+
+### 5 — Apply advanced SQL (stored procedures, triggers, views)
+
+In pgAdmin → cinebook database → Query Tool, run:
+
+```
+database/recommendations_and_forecasting.sql
+```
+
+Or from psql:
+
+```bash
+psql -U cinebook_user -d cinebook -f database/recommendations_and_forecasting.sql
+```
+
+### 6 — (Optional) Fetch live TMDB metadata
+
+```bash
+python scripts/fetch_tmdb.py
+```
+
+### 7 — Start the backend
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+The API will be available at **http://localhost:8000**  
+Interactive docs: **http://localhost:8000/docs**
+
+### 8 — Open the frontend
+
+Open any of the HTML files directly in your browser:
+
+```
+CineBook_Frontend/homepage.html    ← Start here
+```
+
+Or, since CORS is enabled, you can open `http://localhost:8000/` (served from FastAPI).
+
+---
+
+## Seed Test Accounts
+
+| Email | Password | Role | Favorite Genre |
+|---|---|---|---|
+| admin@cinebook.com | AdminPass!23 | **admin** | — |
+| alice@example.com | password123 | customer | Action |
+| bob@example.com | password123 | customer | Horror |
+| david@example.com | password123 | customer | Sci-Fi |
+| carol@example.com | password123 | customer | Romance |
 
 ---
 
@@ -11,180 +121,109 @@ A web-based movie theater management and ticket booking application with dynamic
 
 ```
 CineBook/
-├── app/                        # FastAPI application (Milestone 2+)
+├── app/
+│   ├── main.py                  # FastAPI entry point (uvicorn app.main:app)
+│   ├── sessions.py              # In-memory session token store
+│   ├── dependencies.py          # Auth dependency (get_current_user)
 │   ├── core/
-│   │   └── config.py           # Central settings (reads .env)
-│   └── db/
-│       └── connection.py       # psycopg2 connection helper / context manager
+│   │   └── config.py            # Reads .env
+│   ├── db/
+│   │   └── connection.py        # psycopg2 context manager
+│   └── routers/
+│       ├── auth.py              # POST /api/auth/login|register|logout|me
+│       ├── movies.py            # GET  /api/movies, /api/movies/{id}/showtimes
+│       ├── showtimes.py         # GET  /api/showtimes, /api/showtimes/{id}/seats
+│       ├── bookings.py          # POST/GET/DELETE /api/bookings
+│       ├── recommendations.py   # GET  /api/recommendations
+│       └── admin.py             # GET/POST /api/admin/...
+│
+├── CineBook_Frontend/
+│   ├── homepage.html            # Login + Register
+│   ├── discoveryPage.html       # Movie catalog + recommendations
+│   ├── seating.html             # Seat selection + booking
+│   ├── userProfile.html         # Booking history + cancellation
+│   ├── adminPage.html           # Forecasting dashboard + alerts
+│   └── inventory.html           # Showtime management (admin)
 │
 ├── database/
-│   ├── schema.sql              # Full DDL — all tables, indexes, triggers
-│   └── seed.sql                # Synthetic data for development/testing
+│   ├── schema.sql               # DDL: 7 tables, indexes, occupancy trigger
+│   ├── seed.sql                 # Synthetic test data
+│   └── recommendations_and_forecasting.sql  # Stored procs, triggers, views
 │
 ├── scripts/
-│   ├── init_db.py              # Creates DB + applies schema  (run first)
-│   ├── seed_db.py              # Loads seed.sql + hashes passwords
-│   └── fetch_tmdb.py           # Fetches TMDB metadata → External_Metadata
+│   ├── init_db.py               # Create DB + apply schema
+│   ├── seed_db.py               # Load seed data + hash passwords
+│   └── fetch_tmdb.py            # Populate External_Metadata from TMDB API
 │
-├── .env.example                # Template — copy to .env and fill in values
-├── requirements.txt
-└── README.md
+├── tests/
+│   └── test_api.py              # API validation tests
+│
+├── DEMO_SCRIPT.md               # Step-by-step demo walkthrough
+├── .env                         # Environment variables (pre-configured)
+└── requirements.txt
 ```
 
 ---
 
-## Tech Stack
+## API Endpoints (Summary)
 
-| Layer    | Technology                           |
-|----------|--------------------------------------|
-| Database | PostgreSQL 15+                       |
-| Backend  | Python 3.11+ / FastAPI               |
-| Frontend | React.js + HTML5/CSS3 (Milestone 4)  |
-| External | TMDB API                             |
-
----
-
-## Milestone Ownership
-
-| Milestone | Owner              | Description                              |
-|-----------|--------------------|------------------------------------------|
-| 1         | All                | DB init, schema, seed data, TMDB fetch   |
-| 2         | Melissa Le         | FastAPI routes, auth, CRUD endpoints     |
-| 3         | Fanta Amouzougan   | Stored procedures, triggers, window fns  |
-| 4         | Vanohra Gaspard    | React frontend, seating map, dashboards  |
-| 5         | All                | Testing, documentation, final demo       |
-
----
-
-## Milestone 1 Setup Guide
-
-### Prerequisites
-
-- Python 3.11+
-- PostgreSQL 15+ installed and running locally
-- A [TMDB API key](https://www.themoviedb.org/settings/api) (free account) ** We already have the API key
-
-### 1 — Clone and install dependencies
-
-```bash
-git clone <repo-url>
-cd CineBook
-
-# Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-pip install -r requirements.txt
-```
-
-### 2 — Create a PostgreSQL user and configure .env
-
- Open the pgAdmin 4 app. Clcik on "servers" on the left side bar and type password "DataDivas". Then click on Databses -> postgres -> query tool. Then run:
-
-```sql
--- In psql as a superuser (e.g., postgres):
-CREATE USER cinebook_user WITH PASSWORD 'your_secure_password';
-ALTER USER cinebook_user CREATEDB;
-```
-
-```bash
-cp .env.example .env
-# Open .env and fill in DB_PASSWORD and TMDB_API_KEY
-```
-
-### 3 — Initialize the database
-Open the project terminal and run: 
-```bash
-# Creates the 'cinebook' database and applies schema.sql
-python scripts/init_db.py
-```
-
-### 4 — Load synthetic seed data
-Open the project terminal and run: 
-```bash
-# Inserts test users, theaters, movies, showtimes, bookings, forecasts
-python scripts/seed_db.py
-```
-
-### 5 — Populate live TMDB metadata
-Open the project terminal and run: 
-```bash
-# Fetches popularity, rating, and trending status for each movie from TMDB
-python scripts/fetch_tmdb.py
-```
-
-### Verify
- In pgAdmin4, go to servers -> PostgreSQL 18 -> databses. Right click databases and refresh. You will see the "Cinebook" database. Right click on cinebook, then on query tool and run: 
- 
-```sql
--- Connect to cinebook and run a quick sanity check
-\c cinebook
-SELECT m.Title, em.TMDB_Popularity, em.TMDB_Rating, em.TrendingStatus
-FROM   Movies m
-JOIN   External_Metadata em ON em.MovieID = m.MovieID
-ORDER  BY em.TMDB_Popularity DESC;
-```
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | /api/auth/login | — | Login → returns token |
+| POST | /api/auth/register | — | Register new customer |
+| GET | /api/auth/me | required | Current user info |
+| GET | /api/movies | required | List all movies |
+| GET | /api/movies/{id}/showtimes | required | Upcoming showtimes for movie |
+| GET | /api/showtimes | required | All upcoming showtimes |
+| GET | /api/showtimes/{id}/seats | required | Seat availability + dynamic price |
+| POST | /api/bookings | required | Create booking |
+| GET | /api/bookings/me | required | My booking history |
+| DELETE | /api/bookings/{id} | required | Cancel booking |
+| GET | /api/recommendations | customer | Personalized recommendations |
+| GET | /api/admin/dashboard | admin | Forecast dashboard (mat. view) |
+| GET | /api/admin/forecasts | admin | All forecast rows |
+| POST | /api/admin/forecasts/run | admin | Run forecasting stored procedure |
+| GET | /api/admin/alerts | admin | Admin capacity alerts |
+| GET | /api/admin/showtimes | admin | Manage showtimes |
+| POST | /api/admin/showtimes | admin | Create showtime |
+| PUT | /api/admin/showtimes/{id} | admin | Update showtime price |
+| GET | /api/admin/stats | admin | Summary statistics |
 
 ---
 
-## Database Schema
+## Dynamic Pricing Rules
 
-### Entities
+The pricing engine runs at booking time (`app/routers/bookings.py`):
 
-| Table              | Primary Key   | Description                                         |
-|--------------------|---------------|-----------------------------------------------------|
-| `Users`            | UserID        | Customers and admins; stores bcrypt-hashed passwords|
-| `Theaters`         | TheaterID     | Physical screening rooms (Hall A, IMAX, etc.)       |
-| `Movies`           | MovieID       | Film catalog; links to TMDB via `TMDB_ID`           |
-| `External_Metadata`| MetadataID    | Live TMDB data (popularity, rating, trending)       |
-| `Showtimes`        | ShowtimeID    | A movie + theater + date/time + pricing slot        |
-| `Bookings`         | BookingID     | One row per reserved seat                           |
-| `Demand_Forecasts` | ForecastID    | Admin-facing predicted occupancy & revenue          |
+| Condition | Effect |
+|-----------|--------|
+| Occupancy < 20% AND showtime < 2 hours away | **−15% discount** (last-minute deal) |
+| Occupancy > 80% | **+15% surcharge** (high demand) |
+| Otherwise | Standard base price |
 
-### Key Relationships
+This matches the rule described in the project report (Section 5.3).
 
-```
-Movies ──< Showtimes >── Theaters
-Movies ──< External_Metadata
-Showtimes ──< Bookings >── Users
-Showtimes ──< Demand_Forecasts
-```
+---
 
-### Automatic Triggers
+## Key Database Features
 
-- **`trg_update_occupancy`** — Updates `Showtimes.CurrentOccupancy` on every `Bookings` INSERT or status change, keeping the count consistent without requiring the application layer to manage it.
+- **`trg_update_occupancy`** — Auto-updates `Showtimes.CurrentOccupancy` on every booking INSERT/UPDATE
+- **`trg_refresh_forecast`** — Auto-refreshes the `Demand_Forecasts` row after each booking
+- **`trg_flag_high_demand`** — Creates `Admin_Alerts` when a showtime hits 70% or 90% capacity
+- **`get_user_recommendations(user_id)`** — Returns ranked top-10 movies using genre, TMDB trending, and booking history
+- **`run_demand_forecasting(admin_id)`** — Upserts forecasts using window functions (RANK, LAG, rolling AVG)
+- **`mv_forecast_dashboard`** — Materialized view with `RANK()` and cumulative revenue
+- **`mv_movie_performance`** — Materialized view with revenue share and genre rankings
 
 ---
 
 ## Environment Variables
 
-| Variable        | Description                             | Default            |
-|-----------------|-----------------------------------------|--------------------|
-| `DB_HOST`       | PostgreSQL host                         | `localhost`        |
-| `DB_PORT`       | PostgreSQL port                         | `5432`             |
-| `DB_NAME`       | Database name                           | `cinebook`         |
-| `DB_USER`       | Database user                           | `cinebook_user`    |
-| `DB_PASSWORD`   | Database password                       | *(required)*       |
-| `TMDB_API_KEY`  | TMDB v3 API key                         | *(required)*       |
-| `TMDB_BASE_URL` | TMDB base URL                           | `https://api.themoviedb.org/3` |
-
----
-
-## Seed Test Accounts
-
-| Email                  | Password       | Role     | Favorite Genre |
-|------------------------|----------------|----------|----------------|
-| admin@cinebook.com     | AdminPass!23   | admin    | —              |
-| alice@example.com      | password123    | customer | Action         |
-| bob@example.com        | password123    | customer | Horror         |
-| david@example.com      | password123    | customer | Sci-Fi         |
-
-> Passwords are bcrypt-hashed on seed load. Do **not** use these credentials in production.
-
----
-
-## Notes for Team Members
-
-- **Fanta (Database Lead, Milestone 3):** Stored procedures and window functions should be added as new `.sql` files under `database/` and called from the backend. The `get_db()` context manager in `app/db/connection.py` is ready for you to use.
-- **Melissa (Backend Lead, Milestone 2):** FastAPI routes go in `app/routers/`. Use `app/db/connection.py`'s `get_db()` as a dependency. Auth should read `Users.Role` to implement role-based access.
-- **Vanohra (Frontend Lead, Milestone 4):** The React app can live at `frontend/`. API responses from the FastAPI backend will be the data source for all UI components.
+| Variable | Default |
+|---|---|
+| DB_HOST | localhost |
+| DB_PORT | 5432 |
+| DB_NAME | cinebook |
+| DB_USER | cinebook_user |
+| DB_PASSWORD | DataDivas |
+| TMDB_API_KEY | dd6aff4583f50a37c2fd453b95b7ab44 |

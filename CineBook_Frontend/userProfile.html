@@ -341,4 +341,147 @@
 </div>
 <p class="opacity-50">© 2024 CineBook Digital Proscenium</p>
 </footer>
+
+<script>
+const API = 'http://localhost:8000/api';
+const token = localStorage.getItem('cb_token');
+if (!token) { window.location.href = 'homepage.html'; }
+const role         = localStorage.getItem('cb_role');
+const cbName       = localStorage.getItem('cb_name') || 'Guest';
+const loyaltyPts   = parseInt(localStorage.getItem('cb_loyalty_points') || '0');
+const favGenre     = localStorage.getItem('cb_favorite_genre') || '';
+
+function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
+
+// ── Nav wiring ──────────────────────────────────────────────────────────────
+const navLinks = document.querySelectorAll('header nav a');
+if (navLinks[0]) navLinks[0].href = 'discoveryPage.html';
+if (navLinks[1]) navLinks[1].href = 'discoveryPage.html';
+if (navLinks[2]) navLinks[2].href = role === 'admin' ? 'adminPage.html' : 'userProfile.html';
+if (navLinks[3]) navLinks[3].href = 'inventory.html';
+// Logout
+const logoutBtn = document.querySelector('button[data-icon="logout"]');
+if (logoutBtn) logoutBtn.addEventListener('click', () => { localStorage.clear(); window.location.href = 'homepage.html'; });
+// Book new
+const bookNewBtn = document.querySelector('button.px-8.py-3');
+if (bookNewBtn) bookNewBtn.addEventListener('click', () => window.location.href = 'discoveryPage.html');
+
+// ── Populate static user info ────────────────────────────────────────────────
+const nameEl = document.querySelector('h1.text-4xl');
+if (nameEl) nameEl.textContent = cbName;
+const loyaltyEl = document.querySelector('.font-headline.font-bold.text-on-surface');
+if (loyaltyEl) loyaltyEl.textContent = loyaltyPts.toLocaleString();
+const genreTagEl = document.querySelector('.px-3.py-1.bg-secondary-container\\/20');
+if (genreTagEl && favGenre) genreTagEl.textContent = favGenre + ' Fan';
+
+// Loyalty progress bar
+const progressBar = document.querySelector('.bg-gradient-to-r.from-primary.to-primary-container.w-\\[85\\%\\]');
+const progressLabel = document.querySelector('.flex.justify-between.text-xs .text-right');
+if (progressBar) { const pct = Math.min((loyaltyPts / 1000) * 100, 100); progressBar.style.width = pct + '%'; }
+if (progressLabel) progressLabel.textContent = `${loyaltyPts} / 1000 pts`;
+const progressDesc = document.querySelector('p.text-xs.text-on-surface-variant.leading-relaxed');
+if (progressDesc) progressDesc.innerHTML = `Only <span class="text-primary">${Math.max(1000 - loyaltyPts, 0)}</span> points away from <span class="text-primary">Cinema Legend</span> status.`;
+
+// ── Bookings table ────────────────────────────────────────────────────────────
+const tbody = document.querySelector('tbody');
+const tabBookingCount = document.querySelector('.ml-2.px-2.py-0\\.5');
+
+async function loadBookings() {
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-on-surface-variant">Loading…</td></tr>';
+  try {
+    const res = await fetch(`${API}/bookings/me`, { headers: authHeaders() });
+    const bookings = await res.json();
+    if (tabBookingCount) tabBookingCount.textContent = bookings.filter(b => b.status === 'confirmed').length;
+    if (!bookings.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-on-surface-variant">No bookings yet. <a href="discoveryPage.html" class="text-primary underline">Browse movies</a></td></tr>'; return; }
+    tbody.innerHTML = bookings.map(b => {
+      const isPast = new Date(`${b.date}T${b.start_time}`) < new Date();
+      const statusColor = b.status === 'confirmed' ? 'text-emerald-400' : 'text-on-surface-variant';
+      const dotColor    = b.status === 'confirmed' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-on-surface-variant';
+      const statusLabel = b.status === 'confirmed' ? (isPast ? 'Watched' : 'Confirmed') : 'Cancelled';
+      const poster = b.poster_url || '';
+      const actionBtn = (b.status === 'confirmed' && !isPast)
+        ? `<button onclick="cancelBooking(${b.booking_id}, this)" class="text-xs text-error hover:underline transition-all">Cancel</button>`
+        : `<span class="text-xs text-on-surface-variant">${isPast ? 'Past' : '—'}</span>`;
+      return `
+        <tr class="hover:bg-surface-container-low transition-colors group">
+          <td class="px-8 py-6">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-16 rounded overflow-hidden flex-shrink-0 bg-surface-container">
+                ${poster ? `<img class="w-full h-full object-cover" src="${poster}" alt="${b.title}" onerror="this.style.display='none'"/>` : ''}
+              </div>
+              <div>
+                <p class="font-headline font-bold text-on-surface group-hover:text-primary transition-colors">${b.title}</p>
+                <p class="text-xs text-on-surface-variant">${b.theater_name} • ${b.screen_type}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-8 py-6">
+            <p class="text-sm font-medium">${b.date}</p>
+            <p class="text-xs text-on-surface-variant">${b.start_time.slice(0,5)}</p>
+          </td>
+          <td class="px-8 py-6">
+            <span class="px-2 py-1 bg-surface-container rounded text-[10px] font-bold">${b.seat_number}</span>
+          </td>
+          <td class="px-8 py-6 font-headline font-bold text-primary">$${b.final_price.toFixed(2)}</td>
+          <td class="px-8 py-6">
+            <span class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${statusColor}">
+              <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>${statusLabel}
+            </span>
+          </td>
+          <td class="px-8 py-6 text-right">${actionBtn}</td>
+        </tr>`;
+    }).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-error">Failed to load bookings.</td></tr>'; }
+}
+
+async function cancelBooking(id, btn) {
+  if (!confirm('Cancel this booking?')) return;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const res = await fetch(`${API}/bookings/${id}`, { method: 'DELETE', headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok) { alert(data.detail || 'Cancel failed'); btn.disabled = false; btn.textContent = 'Cancel'; return; }
+    loadBookings();
+  } catch(e) { alert('Network error'); btn.disabled = false; btn.textContent = 'Cancel'; }
+}
+
+// ── Recommendations preview ──────────────────────────────────────────────────
+const recGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-4');
+
+async function loadRecs() {
+  if (!recGrid || role !== 'customer') return;
+  try {
+    const res = await fetch(`${API}/recommendations`, { headers: authHeaders() });
+    const recs = await res.json();
+    if (!recs.length) return;
+    recGrid.innerHTML = recs.slice(0, 4).map(r => {
+      const poster = r.poster_url || `https://via.placeholder.com/200x300/1a1a2e/00d4ff?text=${encodeURIComponent(r.title)}`;
+      return `
+        <div class="group cursor-pointer" onclick="goToMovie(${r.movie_id})">
+          <div class="relative overflow-hidden rounded-xl aspect-[2/3] mb-4">
+            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="${poster}" alt="${r.title}" onerror="this.src='https://via.placeholder.com/200x300/1a1a2e/00d4ff?text=No+Poster'"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+              <button class="bg-primary text-on-primary font-bold py-2 rounded-lg text-xs uppercase tracking-widest">Book Now</button>
+            </div>
+          </div>
+          <p class="font-bold text-sm">${r.title}</p>
+          <p class="text-xs text-on-surface-variant">${r.genre} • ${r.tmdb_rating ? r.tmdb_rating.toFixed(1) + ' ★' : ''}</p>
+        </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+function goToMovie(movieId) {
+  fetch(`${API}/movies/${movieId}/showtimes`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(shows => {
+      if (shows && shows.length) window.location.href = `seating.html?showtime_id=${shows[0].showtime_id}&movie_id=${movieId}`;
+      else alert('No upcoming showtimes.');
+    });
+}
+
+loadBookings();
+loadRecs();
+</script>
 </body></html>

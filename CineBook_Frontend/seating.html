@@ -322,4 +322,226 @@
 </div>
 <p class="text-[#bbc9cf] font-headline text-[10px] uppercase tracking-widest opacity-50">© 2024 CineBook Digital Proscenium</p>
 </div>
+
+<script>
+const API = 'http://localhost:8000/api';
+const token = localStorage.getItem('cb_token');
+if (!token) { window.location.href = 'homepage.html'; }
+const role = localStorage.getItem('cb_role');
+
+function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
+
+// Nav wiring
+const navLinks = document.querySelectorAll('nav .hidden.md\\:flex a');
+if (navLinks[0]) navLinks[0].href = 'discoveryPage.html';
+if (navLinks[1]) navLinks[1].href = 'discoveryPage.html';
+if (navLinks[2]) { navLinks[2].href = role === 'admin' ? 'adminPage.html' : 'userProfile.html'; }
+if (navLinks[3]) navLinks[3].href = 'inventory.html';
+// Profile button
+const profBtn = document.querySelectorAll('nav button')[1];
+if (profBtn) profBtn.addEventListener('click', () => window.location.href = 'userProfile.html');
+
+// ── Parse URL params ─────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const showtimeId = parseInt(params.get('showtime_id'));
+const movieId    = parseInt(params.get('movie_id'));
+
+if (!showtimeId) {
+  document.querySelector('main').innerHTML = '<p class="text-error p-12 text-center">No showtime selected. <a href="discoveryPage.html" class="text-primary underline">Browse movies</a></p>';
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let selectedSeats = new Set();
+let currentPrice  = 0;
+let priceModifier = 'standard';
+let modifierPct   = 0;
+
+// ── Showtime detail panel ────────────────────────────────────────────────────
+async function loadShowtime() {
+  const res = await fetch(`${API}/showtimes/${showtimeId}`, { headers: authHeaders() });
+  if (!res.ok) { alert('Showtime not found.'); return; }
+  const st = await res.json();
+
+  // Movie poster
+  const poster = document.querySelector('section.md\\:w-\\[40\\%\\] img');
+  if (poster && st.poster_url) poster.src = st.poster_url;
+
+  // Title
+  const title = document.querySelector('section.md\\:w-\\[40\\%\\] h1');
+  if (title) {
+    const parts = st.title.split(' ');
+    title.innerHTML = parts.slice(0,-1).join(' ') + '<br/><span class="text-primary-container">' + (parts.at(-1)||'') + '</span>';
+  }
+  // Rating
+  const ratingEl = document.querySelector('.text-3xl.font-black.text-primary-container.font-headline');
+  if (ratingEl) ratingEl.innerHTML = (st.tmdb_rating || '—') + '<span class="text-sm text-on-surface-variant font-normal">/10</span>';
+
+  // Tags
+  const tagsDiv = document.querySelector('.flex.flex-wrap.gap-2.py-2');
+  if (tagsDiv) tagsDiv.innerHTML = `
+    <span class="px-3 py-1 bg-surface-container-high rounded-full text-xs font-medium text-on-surface-variant">${st.genre}</span>
+    <span class="px-3 py-1 bg-surface-container-high rounded-full text-xs font-medium text-on-surface-variant">${st.screen_type}</span>
+    <span class="w-[1px] h-6 bg-outline-variant/30 mx-1"></span>
+    <span class="flex items-center gap-1 text-xs text-on-surface-variant font-medium">
+      <span class="material-symbols-outlined text-sm">schedule</span> ${Math.floor(st.duration/60)}h ${st.duration%60}m
+    </span>
+    <span class="flex items-center gap-1 text-xs text-on-surface-variant font-medium">
+      <span class="material-symbols-outlined text-sm">calendar_month</span> ${st.date}
+    </span>`;
+
+  // Description
+  const descEl = document.querySelector('section.md\\:w-\\[40\\%\\] p.font-body');
+  if (descEl) descEl.textContent = st.description || '';
+
+  // Trending badge
+  const trendBadge = document.querySelector('.bg-tertiary-container');
+  if (trendBadge) trendBadge.style.display = st.trending_status === 'trending' ? '' : 'none';
+
+  currentPrice  = st.final_price;
+  priceModifier = st.price_modifier;
+  modifierPct   = st.modifier_pct;
+  updatePriceBar();
+
+  // Load same-movie showtimes for the showtime picker
+  loadShowtimePicker(st.movie_id, showtimeId);
+}
+
+async function loadShowtimePicker(movieId, currentId) {
+  const res = await fetch(`${API}/movies/${movieId}/showtimes`, { headers: authHeaders() });
+  if (!res.ok) return;
+  const shows = await res.json();
+  const grid  = document.querySelector('.grid.grid-cols-2.lg\\:grid-cols-4');
+  if (!grid) return;
+  grid.innerHTML = shows.map(s => {
+    const isActive = s.showtime_id === currentId;
+    const fillPct  = s.fill_pct;
+    const barW     = Math.min(fillPct, 100);
+    const barColor = fillPct > 80 ? 'bg-error' : 'bg-primary-container';
+    return `
+      <button onclick="changeShowtime(${s.showtime_id}, ${movieId})"
+        class="group p-4 rounded-xl bg-surface-container ${isActive ? 'border-2 border-primary-container shadow-[0_0_15px_rgba(0,212,255,0.15)]' : 'border border-outline-variant/20 hover:border-primary-container/50'}
+               flex flex-col gap-2 transition-all duration-300">
+        <span class="text-xl font-black font-headline ${isActive ? 'text-primary-container' : 'text-on-surface'}">${s.start_time.slice(0,5)}</span>
+        <div class="flex flex-col">
+          <span class="text-[10px] text-on-surface-variant uppercase font-bold">$${s.base_price.toFixed(2)}</span>
+          <div class="w-full bg-surface-container-highest h-1 rounded-full mt-2 overflow-hidden">
+            <div class="${barColor} h-full transition-all" style="width:${barW}%"></div>
+          </div>
+          <span class="text-[9px] mt-1 ${fillPct>80 ? 'text-error' : 'text-primary'} text-right font-bold">${fillPct}% FULL</span>
+        </div>
+      </button>`;
+  }).join('');
+}
+
+function changeShowtime(id, mid) {
+  window.location.href = `seating.html?showtime_id=${id}&movie_id=${mid}`;
+}
+
+// ── Seat map ──────────────────────────────────────────────────────────────────
+const seatGrid = document.querySelector('.grid.grid-rows-10');
+
+async function loadSeats() {
+  const res = await fetch(`${API}/showtimes/${showtimeId}/seats`, { headers: authHeaders() });
+  if (!res.ok) return;
+  const data = await res.json();
+
+  currentPrice = data.final_price;
+  priceModifier = data.price_modifier;
+  modifierPct   = data.modifier_pct;
+
+  const rows = 'ABCDEFGHIJ'.split('');
+  const seatsPerRow = 10;
+  const seatMap = {};
+  data.seats.forEach(s => { seatMap[s.seat] = s.status; });
+
+  if (seatGrid) {
+    seatGrid.innerHTML = rows.map(row => `
+      <div class="flex items-center gap-2 md:gap-4">
+        <span class="w-4 text-[10px] font-black text-on-surface-variant/40">${row}</span>
+        <div class="flex gap-1 md:gap-2">
+          ${Array.from({length: seatsPerRow}, (_,i) => {
+            const seatLabel = `${row}${i+1}`;
+            const status    = seatMap[seatLabel] || 'available';
+            if (status === 'taken') {
+              return `<div title="${seatLabel}: Taken" class="w-5 h-6 md:w-6 md:h-7 rounded-t-lg bg-surface-container-highest opacity-50 cursor-not-allowed"></div>`;
+            }
+            return `<div title="${seatLabel}: $${data.final_price.toFixed(2)}"
+              data-seat="${seatLabel}"
+              class="seat-btn w-5 h-6 md:w-6 md:h-7 rounded-t-lg bg-primary-container cursor-pointer hover:bg-primary transition-colors shadow-[0_0_6px_rgba(0,212,255,0.2)] hover:shadow-[0_0_12px_rgba(0,212,255,0.5)]"
+              onclick="toggleSeat('${seatLabel}')"></div>`;
+          }).join('')}
+        </div>
+      </div>`).join('');
+  }
+  updatePriceBar();
+}
+
+function toggleSeat(seat) {
+  const el = document.querySelector(`[data-seat="${seat}"]`);
+  if (!el) return;
+  if (selectedSeats.has(seat)) {
+    selectedSeats.delete(seat);
+    el.classList.remove('bg-tertiary-container', 'shadow-[0_0_15px_rgba(254,181,40,0.5)]', 'border', 'border-tertiary');
+    el.classList.add('bg-primary-container');
+  } else {
+    selectedSeats.add(seat);
+    el.classList.remove('bg-primary-container');
+    el.classList.add('bg-tertiary-container', 'border', 'border-tertiary');
+  }
+  updatePriceBar();
+}
+
+// ── Bottom action bar ─────────────────────────────────────────────────────────
+const ticketCountEl  = document.querySelector('.text-3xl.font-black.font-headline');
+const ticketSeatsEl  = document.querySelector('.text-xs.text-on-surface-variant.font-medium');
+const totalPriceEl   = document.querySelector('.text-3xl.font-black.font-headline.text-primary-container');
+const loyaltyEl      = document.querySelector('.text-\\[9px\\].text-tertiary');
+const confirmBtn     = document.querySelector('footer .bg-gradient-to-r');
+
+function updatePriceBar() {
+  const count = selectedSeats.size;
+  if (ticketCountEl) ticketCountEl.textContent = String(count).padStart(2, '0');
+  if (ticketSeatsEl) ticketSeatsEl.textContent = count ? `(${[...selectedSeats].join(', ')})` : '(none)';
+  const total = currentPrice * count;
+  if (totalPriceEl) {
+    totalPriceEl.innerHTML = `$${total.toFixed(2)}`;
+    if (modifierPct !== 0) {
+      const base = (currentPrice / (1 + modifierPct/100)) * count;
+      totalPriceEl.innerHTML += ` <span class="text-[10px] ${modifierPct < 0 ? 'text-tertiary-container' : 'text-error'} line-through ml-1 font-bold">$${base.toFixed(2)}</span>`;
+    }
+  }
+  if (loyaltyEl) {
+    if (modifierPct < 0) loyaltyEl.textContent = `Last-minute deal: ${Math.abs(modifierPct)}% off!`;
+    else if (modifierPct > 0) loyaltyEl.textContent = `High demand: +${modifierPct}% surcharge`;
+    else loyaltyEl.textContent = 'Standard pricing';
+  }
+}
+
+if (confirmBtn) {
+  confirmBtn.addEventListener('click', async () => {
+    if (selectedSeats.size === 0) { alert('Please select at least one seat.'); return; }
+    confirmBtn.disabled = true; confirmBtn.textContent = 'Booking…';
+    try {
+      const res = await fetch(`${API}/bookings`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ showtime_id: showtimeId, seat_numbers: [...selectedSeats] }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.detail || 'Booking failed'); confirmBtn.disabled = false; confirmBtn.innerHTML = 'Confirm Booking <span class="material-symbols-outlined font-bold">arrow_forward</span>'; return; }
+      alert(`Booking confirmed!\nSeats: ${data.seats.join(', ')}\nTotal: $${data.total.toFixed(2)}\n${data.price_modifier !== 'standard' ? `(${data.price_modifier})` : ''}`);
+      window.location.href = 'userProfile.html';
+    } catch(e) {
+      alert('Network error. Is the server running?');
+      confirmBtn.disabled = false; confirmBtn.innerHTML = 'Confirm Booking <span class="material-symbols-outlined font-bold">arrow_forward</span>';
+    }
+  });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+if (showtimeId) {
+  loadShowtime();
+  loadSeats();
+}
+</script>
 </body></html>

@@ -328,4 +328,207 @@
 </div>
 <p class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] text-[#bbc9cf]/60">© 2024 CineBook Digital Proscenium</p>
 </footer>
+
+<script>
+const API = 'http://localhost:8000/api';
+const token = localStorage.getItem('cb_token');
+const role  = localStorage.getItem('cb_role');
+if (!token || role !== 'admin') { window.location.href = 'homepage.html'; }
+
+function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
+
+// Nav wiring
+const navLinks = document.querySelectorAll('nav .hidden.md\\:flex a');
+if (navLinks[0]) navLinks[0].href = 'adminPage.html';
+if (navLinks[1]) navLinks[1].href = 'inventory.html';
+const logoutBtn = document.querySelector('button[class*="gap-2"]');
+if (logoutBtn) logoutBtn.addEventListener('click', () => { localStorage.clear(); window.location.href = 'homepage.html'; });
+const sidebarBookBtn = document.querySelector('aside button');
+if (sidebarBookBtn) sidebarBookBtn.addEventListener('click', () => window.location.href = 'inventory.html');
+
+// ── Stats cards (inject above charts) ────────────────────────────────────────
+async function loadStats() {
+  try {
+    const res = await fetch(`${API}/admin/stats`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const s = await res.json();
+    const header = document.querySelector('main header');
+    if (!header) return;
+    const statsDiv = document.createElement('div');
+    statsDiv.className = 'grid grid-cols-2 md:grid-cols-5 gap-4 mb-10';
+    statsDiv.innerHTML = [
+      { label: 'Customers', value: s.total_customers, icon: 'group', color: 'text-primary' },
+      { label: 'Bookings', value: s.total_bookings, icon: 'confirmation_number', color: 'text-secondary' },
+      { label: 'Revenue', value: '$' + s.total_revenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}), icon: 'attach_money', color: 'text-tertiary-container' },
+      { label: 'Upcoming Shows', value: s.upcoming_shows, icon: 'movie', color: 'text-primary-container' },
+      { label: 'Active Alerts', value: s.active_alerts, icon: 'warning', color: s.active_alerts > 0 ? 'text-error' : 'text-on-surface-variant' },
+    ].map(c => `
+      <div class="bg-surface-container-low rounded-xl p-5 border border-white/5 flex items-center gap-4">
+        <span class="material-symbols-outlined ${c.color} text-3xl" style="font-variation-settings:'FILL' 1">${c.icon}</span>
+        <div>
+          <p class="text-2xl font-black font-headline ${c.color}">${c.value}</p>
+          <p class="text-[10px] text-on-surface-variant uppercase tracking-widest">${c.label}</p>
+        </div>
+      </div>`).join('');
+    header.after(statsDiv);
+  } catch(e) {}
+}
+
+// ── Occupancy bar chart from real forecasts ──────────────────────────────────
+async function loadForecasts() {
+  try {
+    const res = await fetch(`${API}/admin/forecasts`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const forecasts = await res.json();
+
+    // Bar chart: top 7 showtimes by predicted occupancy
+    const chartContainer = document.querySelector('.h-64.flex.items-end.justify-between');
+    if (chartContainer && forecasts.length) {
+      const top7 = forecasts.slice(0, 7);
+      const maxOcc = Math.max(...top7.map(f => f.predicted_occupancy || 0), 100);
+      chartContainer.innerHTML = top7.map(f => {
+        const pct = f.predicted_occupancy ? Math.min(f.predicted_occupancy, 100) : 0;
+        const barH = (pct / 100 * 90).toFixed(1);
+        const fillColor = pct >= 90 ? 'bg-error' : pct >= 70 ? 'bg-tertiary-container' : 'bg-emerald-500';
+        const label = f.start_time ? f.start_time.slice(0,5) : f.title.slice(0,5);
+        return `
+          <div class="flex flex-col items-center gap-1 flex-1">
+            <div class="w-full ${fillColor} rounded-t z-10 relative transition-all duration-500" style="height:${barH}%"></div>
+            <span class="text-[9px] text-on-surface-variant mt-1 truncate w-full text-center">${label}</span>
+            <span class="text-[8px] text-on-surface-variant/60">${pct.toFixed(0)}%</span>
+          </div>`;
+      }).join('');
+    }
+
+    // Revenue line chart: total per showtime
+    const totalRevenue = forecasts.reduce((a, f) => a + (f.predicted_revenue || 0), 0);
+    const targetEl = document.querySelector('.bg-\\[\\#353534\\]\\/40.px-3.py-1');
+    if (targetEl) targetEl.textContent = `Target: $${(totalRevenue/1000).toFixed(1)}K`;
+
+    // Forecasts table (injected below chart section)
+    const mainDiv = document.querySelector('.max-w-7xl');
+    if (mainDiv) {
+      let tableSection = document.getElementById('forecasts-table');
+      if (!tableSection) {
+        tableSection = document.createElement('section');
+        tableSection.id = 'forecasts-table';
+        tableSection.className = 'bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl mt-8';
+        mainDiv.appendChild(tableSection);
+      }
+      tableSection.innerHTML = `
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold font-headline">Forecast Table</h2>
+          <button onclick="runForecasting()" class="px-4 py-2 bg-primary-container text-on-primary text-xs font-bold rounded-lg hover:brightness-110 transition-all">
+            Run Forecasting Engine
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-surface-container-high/50 text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-bold">
+              <tr>
+                <th class="px-6 py-4">Movie</th>
+                <th class="px-6 py-4">Date / Time</th>
+                <th class="px-6 py-4">Theater</th>
+                <th class="px-6 py-4">Current Fill</th>
+                <th class="px-6 py-4">Predicted Occ</th>
+                <th class="px-6 py-4">Predicted Rev</th>
+                <th class="px-6 py-4">Level</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/5">
+              ${forecasts.slice(0, 15).map(f => {
+                const levelColor = {add_screening:'text-error', high_demand:'text-tertiary-container', adjust_price:'text-secondary', normal:'text-on-surface-variant'}[f.recommendation_level] || 'text-on-surface-variant';
+                const fillPct = f.fill_pct || 0;
+                return `
+                  <tr class="hover:bg-surface-container transition-colors">
+                    <td class="px-6 py-4 font-bold text-on-surface">${f.title}</td>
+                    <td class="px-6 py-4 text-on-surface-variant">${f.date}<br/><span class="text-[10px]">${f.start_time ? f.start_time.slice(0,5) : ''}</span></td>
+                    <td class="px-6 py-4 text-on-surface-variant">${f.theater_name}</td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+                          <div class="${fillPct>80?'bg-error':fillPct>50?'bg-tertiary-container':'bg-emerald-500'} h-full rounded-full" style="width:${Math.min(fillPct,100)}%"></div>
+                        </div>
+                        <span class="text-[11px]">${fillPct.toFixed(0)}%</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 font-bold">${f.predicted_occupancy ? f.predicted_occupancy.toFixed(1)+'%' : '—'}</td>
+                    <td class="px-6 py-4 font-bold text-primary">${f.predicted_revenue ? '$'+f.predicted_revenue.toLocaleString() : '—'}</td>
+                    <td class="px-6 py-4 text-[10px] font-black uppercase tracking-wider ${levelColor}">${(f.recommendation_level||'').replace('_',' ')}</td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+  } catch(e) { console.error('Forecast load error', e); }
+}
+
+async function runForecasting() {
+  try {
+    const res = await fetch(`${API}/admin/forecasts/run`, { method: 'POST', headers: authHeaders() });
+    if (res.ok) { alert('Forecasting engine complete! Refreshing data…'); loadForecasts(); loadAlerts(); }
+    else { const d = await res.json(); alert(d.detail || 'Error running forecasting.'); }
+  } catch(e) { alert('Network error.'); }
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────────
+const alertsGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
+
+async function loadAlerts() {
+  try {
+    const res = await fetch(`${API}/admin/alerts`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const alerts = await res.json();
+    if (!alertsGrid) return;
+    if (!alerts.length) {
+      alertsGrid.innerHTML = '<div class="col-span-3 text-center text-on-surface-variant py-8">No active alerts. System is running smoothly.</div>';
+      return;
+    }
+    alertsGrid.innerHTML = alerts.slice(0, 6).map(a => {
+      const isHigh = a.alert_type === 'near_sold_out';
+      const borderColor = isHigh ? 'border-error' : 'border-tertiary-container';
+      const badgeColor  = isHigh ? 'bg-error/20 text-error' : 'bg-tertiary-container/20 text-tertiary-container';
+      const badge       = isHigh ? 'CRITICAL' : 'WARNING';
+      const suggestion  = a.alert_type === 'near_sold_out' ? 'ADD SCREENING' : 'ADJUST PRICE';
+      return `
+        <div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 ${borderColor} hover:bg-surface-container-high transition-all duration-300 relative group ${a.resolved ? 'opacity-50' : ''}">
+          <div class="flex justify-between items-start mb-4">
+            <div class="${badgeColor} text-[10px] font-black px-2 py-1 rounded">${badge}</div>
+            <span class="text-[10px] text-on-surface-variant font-bold">${a.date} ${a.start_time ? a.start_time.slice(0,5) : ''}</span>
+          </div>
+          <h3 class="text-base font-bold font-headline mb-1">${a.title}</h3>
+          <p class="text-sm text-on-surface-variant mb-4">${a.message || ''}</p>
+          <div class="flex items-center justify-between mt-auto">
+            <span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: ${suggestion}</span>
+            ${!a.resolved ? `<button onclick="resolveAlert(${a.alert_id}, this)" class="text-xs text-on-surface-variant hover:text-primary underline transition-all">Resolve</button>` : '<span class="text-[10px] text-on-surface-variant">Resolved</span>'}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+async function resolveAlert(id, btn) {
+  btn.disabled = true;
+  try {
+    await fetch(`${API}/admin/alerts/${id}/resolve`, { method: 'POST', headers: authHeaders() });
+    loadAlerts();
+  } catch(e) { btn.disabled = false; }
+}
+
+const dismissAllBtn = document.querySelector('button.text-xs.font-bold.text-primary');
+if (dismissAllBtn) dismissAllBtn.addEventListener('click', async () => {
+  const res = await fetch(`${API}/admin/alerts`, { headers: authHeaders() });
+  const alerts = await res.json();
+  for (const a of alerts.filter(a => !a.resolved)) {
+    await fetch(`${API}/admin/alerts/${a.alert_id}/resolve`, { method: 'POST', headers: authHeaders() });
+  }
+  loadAlerts();
+});
+
+// ── Init ────────────────────────────────────────────────────────────────────
+loadStats();
+loadForecasts();
+loadAlerts();
+</script>
 </body></html>

@@ -346,4 +346,143 @@
 </div>
 <p class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] opacity-80">© 2024 CineBook Digital Proscenium</p>
 </footer>
+
+<script>
+const API = 'http://localhost:8000/api';
+const token = localStorage.getItem('cb_token');
+const role  = localStorage.getItem('cb_role');
+if (!token || role !== 'admin') { window.location.href = 'homepage.html'; }
+
+function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
+
+// Nav wiring
+const navLinks = document.querySelectorAll('nav .hidden.md\\:flex a');
+if (navLinks[0]) navLinks[0].href = 'discoveryPage.html';
+if (navLinks[1]) navLinks[1].href = 'discoveryPage.html';
+if (navLinks[2]) navLinks[2].href = 'adminPage.html';
+if (navLinks[3]) navLinks[3].href = 'inventory.html';
+// Logout
+const navBtns = document.querySelectorAll('nav button');
+if (navBtns[2]) navBtns[2].addEventListener('click', () => { localStorage.clear(); window.location.href = 'homepage.html'; });
+
+// ── Populate movie & theater dropdowns ────────────────────────────────────────
+const form    = document.querySelector('form');
+const selects = form ? form.querySelectorAll('select') : [];
+
+async function populateDropdowns() {
+  try {
+    const [movRes, theaRes] = await Promise.all([
+      fetch(`${API}/movies`, { headers: authHeaders() }),
+      fetch(`${API}/admin/theaters`, { headers: authHeaders() }),
+    ]);
+    const movies   = await movRes.json();
+    const theaters = await theaRes.json();
+    if (selects[0]) selects[0].innerHTML = movies.map(m => `<option value="${m.movie_id}">${m.title}</option>`).join('');
+    if (selects[1]) selects[1].innerHTML = theaters.map(t => `<option value="${t.theater_id}">${t.name} (${t.screen_type})</option>`).join('');
+  } catch(e) {}
+}
+
+// ── Add showtime form ────────────────────────────────────────────────────────
+if (form) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const movieId    = selects[0] ? parseInt(selects[0].value) : null;
+    const theaterId  = selects[1] ? parseInt(selects[1].value) : null;
+    const dateInput  = form.querySelector('input[type="date"]');
+    const timeInput  = form.querySelector('input[type="time"]');
+    const priceInput = form.querySelector('input[type="number"]');
+    if (!movieId || !theaterId || !dateInput.value || !timeInput.value || !priceInput.value) {
+      alert('Please fill all fields.'); return;
+    }
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true; submitBtn.textContent = 'Adding…';
+    try {
+      const res = await fetch(`${API}/admin/showtimes`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          movie_id: movieId, theater_id: theaterId,
+          date: dateInput.value, start_time: timeInput.value,
+          base_price: parseFloat(priceInput.value),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.detail || 'Failed to add showtime.'); }
+      else { alert('Showtime added!'); loadShowtimes(); }
+    } catch(e) { alert('Network error.'); }
+    submitBtn.disabled = false; submitBtn.innerHTML = '<span class="material-symbols-outlined text-lg">add</span> Add Showtime';
+  });
+}
+
+// ── Load showtimes table ──────────────────────────────────────────────────────
+const tbody    = document.querySelector('tbody');
+const countEl  = document.querySelector('.bg-surface-container-low\\/50 .text-xs.text-on-surface-variant');
+
+async function loadShowtimes() {
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-on-surface-variant">Loading…</td></tr>';
+  try {
+    const res = await fetch(`${API}/admin/showtimes`, { headers: authHeaders() });
+    const showtimes = await res.json();
+    if (countEl) countEl.textContent = `Showing ${showtimes.length} upcoming showtimes`;
+    if (!showtimes.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-on-surface-variant">No upcoming showtimes.</td></tr>'; return; }
+    tbody.innerHTML = showtimes.map(s => {
+      const fillPct = s.fill_pct || 0;
+      const barColor = fillPct > 80 ? 'bg-error' : fillPct > 50 ? 'bg-tertiary-container' : 'bg-primary-container';
+      const predColor = s.recommendation_level === 'add_screening' ? 'text-error' : s.recommendation_level === 'high_demand' ? 'text-tertiary-container' : 'text-on-surface-variant';
+      const predLabel = s.recommendation_level ? s.recommendation_level.replace('_',' ') : '—';
+      return `
+        <tr class="hover:bg-surface-container-high/30 transition-colors group">
+          <td class="px-6 py-5">
+            <div class="flex items-center gap-3">
+              <div><span class="font-bold text-on-surface">${s.title}</span><p class="text-xs text-on-surface-variant">${s.genre}</p></div>
+            </div>
+          </td>
+          <td class="px-6 py-5 text-on-surface-variant">${s.theater_name}</td>
+          <td class="px-6 py-5">
+            <span class="text-on-surface">${s.date}</span>
+            <p class="text-xs text-on-surface-variant">${s.start_time ? s.start_time.slice(0,5) : ''}</p>
+          </td>
+          <td class="px-6 py-5">
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-32 h-1.5 bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full ${barColor}" style="width:${Math.min(fillPct,100)}%"></div>
+              </div>
+              <span class="text-xs font-medium text-on-surface-variant">${fillPct.toFixed(0)}% (${s.current_occupancy}/${s.total_capacity})</span>
+            </div>
+          </td>
+          <td class="px-6 py-5 text-center">
+            <span class="text-sm font-bold ${predColor}">${s.predicted_occupancy ? s.predicted_occupancy.toFixed(0)+'%' : '—'}</span>
+            <p class="text-[10px] uppercase tracking-tighter ${predColor}">${predLabel}</p>
+          </td>
+          <td class="px-6 py-5">
+            <div class="flex justify-end gap-2">
+              <button onclick="editPrice(${s.showtime_id}, ${s.base_price})" class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/50 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-sm">edit</span> Edit Price
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-error">Error loading showtimes.</td></tr>'; }
+}
+
+async function editPrice(showtimeId, currentPrice) {
+  const newPrice = prompt(`Current base price: $${currentPrice}\nEnter new base price:`, currentPrice);
+  if (!newPrice || isNaN(newPrice)) return;
+  try {
+    const res = await fetch(`${API}/admin/showtimes/${showtimeId}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ base_price: parseFloat(newPrice) }),
+    });
+    if (res.ok) { alert('Price updated!'); loadShowtimes(); }
+    else { const d = await res.json(); alert(d.detail || 'Update failed.'); }
+  } catch(e) { alert('Network error.'); }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+populateDropdowns();
+loadShowtimes();
+</script>
 </body></html>
