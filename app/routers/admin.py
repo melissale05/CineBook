@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 Admin-only routes: forecasting dashboard, alerts, inventory management.
 """
@@ -8,30 +7,21 @@ from typing import Optional
 
 from app.db.connection import get_db
 from app.dependencies import get_current_user, require_admin
-=======
-from fastapi import APIRouter, HTTPException
-from app.db.connection import get_db
->>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
 
 router = APIRouter()
 
 
-<<<<<<< HEAD
 def _admin_check(current_user: dict = Depends(get_current_user)) -> dict:
     return require_admin(current_user)
 
 
-# ── Dashboard / Forecasts ─────────────────────────────────────────────────────
-
 @router.get("/dashboard")
 def get_dashboard(current_user: dict = Depends(_admin_check)):
-    """Return the materialized forecast dashboard view (refresh first)."""
     with get_db() as cur:
-        # Refresh materialized view with latest data
         try:
             cur.execute("REFRESH MATERIALIZED VIEW mv_forecast_dashboard")
         except Exception:
-            pass  # view may have no data yet; we still return what we can
+            pass
 
         cur.execute(
             """
@@ -74,7 +64,6 @@ def get_dashboard(current_user: dict = Depends(_admin_check)):
 
 @router.post("/forecasts/run")
 def run_forecasting(current_user: dict = Depends(_admin_check)):
-    """Run the demand forecasting stored procedure."""
     admin_id = current_user["user_id"]
     with get_db() as cur:
         cur.execute("CALL run_demand_forecasting(%s)", (admin_id,))
@@ -83,7 +72,6 @@ def run_forecasting(current_user: dict = Depends(_admin_check)):
 
 @router.get("/forecasts")
 def get_forecasts(current_user: dict = Depends(_admin_check)):
-    """Return raw Demand_Forecasts rows with showtime info."""
     with get_db() as cur:
         cur.execute(
             """
@@ -171,8 +159,6 @@ def resolve_alert(alert_id: int, current_user: dict = Depends(_admin_check)):
     return {"message": "Alert resolved", "alert_id": alert_id}
 
 
-# ── User Management ───────────────────────────────────────────────────────────
-
 @router.get("/users")
 def get_users(current_user: dict = Depends(_admin_check)):
     with get_db() as cur:
@@ -197,13 +183,11 @@ def get_users(current_user: dict = Depends(_admin_check)):
     ]
 
 
-# ── Inventory (Showtime Management) ──────────────────────────────────────────
-
 class ShowtimeCreate(BaseModel):
     movie_id: int
     theater_id: int
-    date: str        # YYYY-MM-DD
-    start_time: str  # HH:MM
+    date: str
+    start_time: str
     base_price: float
 
 
@@ -298,7 +282,6 @@ def get_theaters(current_user: dict = Depends(_admin_check)):
 
 @router.get("/stats")
 def get_stats(current_user: dict = Depends(_admin_check)):
-    """Summary stats for admin dashboard cards."""
     with get_db() as cur:
         cur.execute("SELECT COUNT(*) AS total FROM Users WHERE Role = 'customer'")
         total_customers = cur.fetchone()["total"]
@@ -309,19 +292,10 @@ def get_stats(current_user: dict = Depends(_admin_check)):
         cur.execute("SELECT COALESCE(SUM(FinalPrice), 0) AS revenue FROM Bookings WHERE Status = 'confirmed'")
         total_revenue = float(cur.fetchone()["revenue"])
 
-        cur.execute(
-            """
-            SELECT COUNT(*) AS total FROM Showtimes
-            WHERE Date >= CURRENT_DATE
-            """
-        )
+        cur.execute("SELECT COUNT(*) AS total FROM Showtimes WHERE Date >= CURRENT_DATE")
         upcoming_shows = cur.fetchone()["total"]
 
-        cur.execute(
-            """
-            SELECT COUNT(*) AS total FROM Admin_Alerts WHERE Resolved = FALSE
-            """
-        )
+        cur.execute("SELECT COUNT(*) AS total FROM Admin_Alerts WHERE Resolved = FALSE")
         active_alerts = cur.fetchone()["total"]
 
     return {
@@ -331,42 +305,3 @@ def get_stats(current_user: dict = Depends(_admin_check)):
         "upcoming_shows": upcoming_shows,
         "active_alerts": active_alerts,
     }
-=======
-def check_admin(user_id):
-    with get_db() as cur:
-        cur.execute("SELECT Role FROM Users WHERE UserID = %s", (user_id,))
-        user = cur.fetchone()
-        if not user or user["role"] != "admin":
-            raise HTTPException(status_code=403, detail="Admin access required")
-
-
-@router.get("/showtimes")
-def admin_showtimes(user_id: int):
-    check_admin(user_id)
-
-    with get_db() as cur:
-        cur.execute("SELECT * FROM Showtimes")
-        return cur.fetchall()
-
-
-@router.get("/bookings")
-def admin_bookings(user_id: int):
-    check_admin(user_id)
-
-    with get_db() as cur:
-        cur.execute("SELECT * FROM Bookings")
-        return cur.fetchall()
-
-
-@router.get("/revenue")
-def admin_revenue(user_id: int):
-    check_admin(user_id)
-
-    with get_db() as cur:
-        cur.execute("""
-            SELECT SUM(FinalPrice) as total_revenue
-            FROM Bookings
-            WHERE Status = 'confirmed'
-        """)
-        return cur.fetchone()
->>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48

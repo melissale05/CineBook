@@ -1,18 +1,13 @@
-<<<<<<< HEAD
 """
 Movie catalog routes.
 """
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
-=======
-from fastapi import APIRouter
->>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
 from app.db.connection import get_db
 
 router = APIRouter()
 
 
-<<<<<<< HEAD
 @router.get("")
 def list_movies(genre: Optional[str] = Query(default=None)):
     with get_db() as cur:
@@ -57,23 +52,11 @@ def list_movies(genre: Optional[str] = Query(default=None)):
         }
         for r in rows
     ]
-=======
-@router.get("/")
-def get_movies():
-    with get_db() as cur:
-        cur.execute("""
-            SELECT m.*, em.tmdb_rating, em.tmdb_popularity, em.trendingstatus
-            FROM Movies m
-            LEFT JOIN External_Metadata em ON m.MovieID = em.MovieID
-        """)
-        return cur.fetchall()
->>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
 
 
 @router.get("/{movie_id}")
 def get_movie(movie_id: int):
     with get_db() as cur:
-<<<<<<< HEAD
         cur.execute(
             """
             SELECT m.MovieID, m.Title, m.Genre, m.Duration, m.ReleaseDate,
@@ -87,7 +70,6 @@ def get_movie(movie_id: int):
         )
         row = cur.fetchone()
     if not row:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Movie not found")
     return {
         "movie_id": row["movieid"],
@@ -134,18 +116,3 @@ def movie_showtimes(movie_id: int):
         }
         for r in rows
     ]
-=======
-        cur.execute("""
-            SELECT * FROM Movies WHERE MovieID = %s
-        """, (movie_id,))
-        return cur.fetchone()
-
-
-@router.get("/showtimes/{movie_id}")
-def get_showtimes(movie_id: int):
-    with get_db() as cur:
-        cur.execute("""
-            SELECT * FROM Showtimes WHERE MovieID = %s
-        """, (movie_id,))
-        return cur.fetchall()
->>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 Booking routes: create booking, cancel, list user's bookings.
 Dynamic pricing is applied at booking time.
@@ -11,15 +10,10 @@ from typing import List
 from app.db.connection import get_db
 from app.dependencies import get_current_user
 from app.routers.showtimes import _compute_dynamic_price
-=======
-from fastapi import APIRouter, HTTPException
-from app.db.connection import get_db
->>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
 
 router = APIRouter()
 
 
-<<<<<<< HEAD
 class BookingRequest(BaseModel):
     showtime_id: int
     seat_numbers: List[str]
@@ -33,7 +27,6 @@ def create_booking(body: BookingRequest, current_user: dict = Depends(get_curren
         raise HTTPException(status_code=400, detail="At least one seat required")
 
     with get_db() as cur:
-        # Load showtime + theater info
         cur.execute(
             """
             SELECT s.ShowtimeID, s.BasePrice, s.CurrentOccupancy,
@@ -48,7 +41,6 @@ def create_booking(body: BookingRequest, current_user: dict = Depends(get_curren
         if not showtime:
             raise HTTPException(status_code=404, detail="Showtime not found")
 
-        # Check seats not already taken
         cur.execute(
             "SELECT SeatNumber FROM Bookings WHERE ShowtimeID = %s AND Status = 'confirmed'",
             (body.showtime_id,),
@@ -58,12 +50,10 @@ def create_booking(body: BookingRequest, current_user: dict = Depends(get_curren
         if conflicts:
             raise HTTPException(status_code=409, detail=f"Seats already taken: {conflicts}")
 
-        # Capacity check
         available_count = showtime["totalcapacity"] - showtime["currentoccupancy"]
         if len(body.seat_numbers) > available_count:
             raise HTTPException(status_code=409, detail="Not enough available seats")
 
-        # Compute dynamic price
         pricing = _compute_dynamic_price(
             float(showtime["baseprice"]),
             showtime["currentoccupancy"],
@@ -73,7 +63,6 @@ def create_booking(body: BookingRequest, current_user: dict = Depends(get_curren
         )
         final_price = pricing["final_price"]
 
-        # Insert bookings
         inserted = []
         for seat in body.seat_numbers:
             cur.execute(
@@ -87,7 +76,6 @@ def create_booking(body: BookingRequest, current_user: dict = Depends(get_curren
             bid = cur.fetchone()["bookingid"]
             inserted.append(bid)
 
-        # Award loyalty points (1 per ticket)
         cur.execute(
             "UPDATE Users SET LoyaltyPoints = LoyaltyPoints + %s WHERE UserID = %s",
             (len(body.seat_numbers), user_id),
@@ -166,41 +154,9 @@ def cancel_booking(booking_id: int, current_user: dict = Depends(get_current_use
             "UPDATE Bookings SET Status = 'cancelled' WHERE BookingID = %s",
             (booking_id,),
         )
-        # Remove loyalty point
         cur.execute(
             "UPDATE Users SET LoyaltyPoints = GREATEST(LoyaltyPoints - 1, 0) WHERE UserID = %s",
             (user_id,),
         )
 
     return {"message": "Booking cancelled", "booking_id": booking_id}
-=======
-@router.post("/")
-def create_booking(user_id: int, showtime_id: int, seat: str, price: float):
-    with get_db() as cur:
-        try:
-            cur.execute("""
-                INSERT INTO Bookings (UserID, ShowtimeID, SeatNumber, FinalPrice)
-                VALUES (%s, %s, %s, %s)
-                RETURNING BookingID
-            """, (user_id, showtime_id, seat, price))
-
-            return {"message": "Booking created"}
-        except Exception:
-            raise HTTPException(status_code=400, detail="Seat already taken")
-
-
-@router.get("/me/{user_id}")
-def get_user_bookings(user_id: int):
-    with get_db() as cur:
-        cur.execute("""
-            SELECT * FROM Bookings WHERE UserID = %s
-        """, (user_id,))
-        return cur.fetchall()
-
-
-@router.delete("/{booking_id}")
-def delete_booking(booking_id: int):
-    with get_db() as cur:
-        cur.execute("DELETE FROM Bookings WHERE BookingID = %s", (booking_id,))
-        return {"message": "Booking deleted"}
->>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
