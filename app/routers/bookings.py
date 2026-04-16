@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 Booking routes: create booking, cancel, list user's bookings.
 Dynamic pricing is applied at booking time.
@@ -10,10 +11,15 @@ from typing import List
 from app.db.connection import get_db
 from app.dependencies import get_current_user
 from app.routers.showtimes import _compute_dynamic_price
+=======
+from fastapi import APIRouter, HTTPException
+from app.db.connection import get_db
+>>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
 
 router = APIRouter()
 
 
+<<<<<<< HEAD
 class BookingRequest(BaseModel):
     showtime_id: int
     seat_numbers: List[str]
@@ -167,3 +173,34 @@ def cancel_booking(booking_id: int, current_user: dict = Depends(get_current_use
         )
 
     return {"message": "Booking cancelled", "booking_id": booking_id}
+=======
+@router.post("/")
+def create_booking(user_id: int, showtime_id: int, seat: str, price: float):
+    with get_db() as cur:
+        try:
+            cur.execute("""
+                INSERT INTO Bookings (UserID, ShowtimeID, SeatNumber, FinalPrice)
+                VALUES (%s, %s, %s, %s)
+                RETURNING BookingID
+            """, (user_id, showtime_id, seat, price))
+
+            return {"message": "Booking created"}
+        except Exception:
+            raise HTTPException(status_code=400, detail="Seat already taken")
+
+
+@router.get("/me/{user_id}")
+def get_user_bookings(user_id: int):
+    with get_db() as cur:
+        cur.execute("""
+            SELECT * FROM Bookings WHERE UserID = %s
+        """, (user_id,))
+        return cur.fetchall()
+
+
+@router.delete("/{booking_id}")
+def delete_booking(booking_id: int):
+    with get_db() as cur:
+        cur.execute("DELETE FROM Bookings WHERE BookingID = %s", (booking_id,))
+        return {"message": "Booking deleted"}
+>>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48

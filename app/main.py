@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 CineBook — FastAPI entry point.
 Run with:  uvicorn app.main:app --reload --port 8000
@@ -49,3 +50,20 @@ if os.path.isdir(frontend_dir):
     @app.get("/")
     def root():
         return FileResponse(os.path.join(frontend_dir, "homepage.html"))
+=======
+from fastapi import FastAPI
+from app.routers import auth, movies, bookings, admin
+
+app = FastAPI(title="CineBook API")
+
+# Register routers
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(movies.router, prefix="/movies", tags=["Movies"])
+app.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
+app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+
+
+@app.get("/")
+def root():
+    return {"message": "CineBook API is running"}
+>>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48

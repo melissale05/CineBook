@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 Admin-only routes: forecasting dashboard, alerts, inventory management.
 """
@@ -7,10 +8,15 @@ from typing import Optional
 
 from app.db.connection import get_db
 from app.dependencies import get_current_user, require_admin
+=======
+from fastapi import APIRouter, HTTPException
+from app.db.connection import get_db
+>>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
 
 router = APIRouter()
 
 
+<<<<<<< HEAD
 def _admin_check(current_user: dict = Depends(get_current_user)) -> dict:
     return require_admin(current_user)
 
@@ -325,3 +331,42 @@ def get_stats(current_user: dict = Depends(_admin_check)):
         "upcoming_shows": upcoming_shows,
         "active_alerts": active_alerts,
     }
+=======
+def check_admin(user_id):
+    with get_db() as cur:
+        cur.execute("SELECT Role FROM Users WHERE UserID = %s", (user_id,))
+        user = cur.fetchone()
+        if not user or user["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+
+
+@router.get("/showtimes")
+def admin_showtimes(user_id: int):
+    check_admin(user_id)
+
+    with get_db() as cur:
+        cur.execute("SELECT * FROM Showtimes")
+        return cur.fetchall()
+
+
+@router.get("/bookings")
+def admin_bookings(user_id: int):
+    check_admin(user_id)
+
+    with get_db() as cur:
+        cur.execute("SELECT * FROM Bookings")
+        return cur.fetchall()
+
+
+@router.get("/revenue")
+def admin_revenue(user_id: int):
+    check_admin(user_id)
+
+    with get_db() as cur:
+        cur.execute("""
+            SELECT SUM(FinalPrice) as total_revenue
+            FROM Bookings
+            WHERE Status = 'confirmed'
+        """)
+        return cur.fetchone()
+>>>>>>> ef8d6d0562c39a4fe5763bcdc0238f89f32e0f48
