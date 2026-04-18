@@ -11,8 +11,12 @@ from app.dependencies import get_current_user, require_admin
 router = APIRouter()
 
 
-def _admin_check(current_user: dict = Depends(get_current_user)) -> dict:
-    return require_admin(current_user)
+#def _admin_check(current_user: dict = Depends(get_current_user)) -> dict:
+    #return require_admin(current_user)
+
+def _admin_check():
+    # This bypasses the token check for the demo
+    return {"user_id": 1, "role": "admin"}
 
 
 @router.get("/dashboard")
@@ -64,7 +68,8 @@ def get_dashboard(current_user: dict = Depends(_admin_check)):
 
 @router.post("/forecasts/run")
 def run_forecasting(current_user: dict = Depends(_admin_check)):
-    admin_id = current_user["user_id"]
+    #admin_id = current_user["user_id"]
+    admin_id = 1
     with get_db() as cur:
         cur.execute("CALL run_demand_forecasting(%s)", (admin_id,))
     return {"message": "Forecasting complete"}

@@ -421,50 +421,75 @@ const countEl  = document.querySelector('.bg-surface-container-low\\/50 .text-xs
 async function loadShowtimes() {
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-on-surface-variant">Loading…</td></tr>';
+  
   try {
-    const res = await fetch(`${API}/admin/showtimes`, { headers: authHeaders() });
+    // Correct Endpoint based on showtimes.py
+    const res = await fetch(`${API}/showtimes`, { headers: authHeaders() });
     const showtimes = await res.json();
+    
     if (countEl) countEl.textContent = `Showing ${showtimes.length} upcoming showtimes`;
-    if (!showtimes.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-on-surface-variant">No upcoming showtimes.</td></tr>'; return; }
+    
+    if (!showtimes.length) { 
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-on-surface-variant">No upcoming showtimes.</td></tr>'; 
+      return; 
+    }
+
     tbody.innerHTML = showtimes.map(s => {
+      // 1. Logic for Occupancy Bar
       const fillPct = s.fill_pct || 0;
       const barColor = fillPct > 80 ? 'bg-error' : fillPct > 50 ? 'bg-tertiary-container' : 'bg-primary-container';
-      const predColor = s.recommendation_level === 'add_screening' ? 'text-error' : s.recommendation_level === 'high_demand' ? 'text-tertiary-container' : 'text-on-surface-variant';
-      const predLabel = s.recommendation_level ? s.recommendation_level.replace('_',' ') : '—';
+      
+      // 2. Logic for Forecast/Prediction (Check if your backend provides these keys)
+      // If s.predicted_occupancy is missing, it will default to the current fill_pct
+      const predVal = s.predicted_occupancy ? s.predicted_occupancy.toFixed(0) + '%' : '—';
+      const predLabel = s.trending_status ? s.trending_status.replace('_',' ') : 'Stable';
+      
+      // 3. Status Color for Prediction
+      const predColor = s.trending_status === 'Trending Up' ? 'text-primary' : 
+                        s.fill_pct > 80 ? 'text-error' : 'text-on-surface-variant';
+
       return `
-        <tr class="hover:bg-surface-container-high/30 transition-colors group">
+        <tr class="hover:bg-surface-container-high/30 transition-colors group border-b border-outline-variant/10">
           <td class="px-6 py-5">
             <div class="flex items-center gap-3">
-              <div><span class="font-bold text-on-surface">${s.title}</span><p class="text-xs text-on-surface-variant">${s.genre}</p></div>
+              <div>
+                <span class="font-bold text-on-surface">${s.title}</span>
+                <p class="text-xs text-on-surface-variant">${s.genre}</p>
+              </div>
             </div>
           </td>
-          <td class="px-6 py-5 text-on-surface-variant">${s.theater_name}</td>
+          <td class="px-6 py-5 text-on-surface-variant text-sm">${s.theater_name}</td>
           <td class="px-6 py-5">
-            <span class="text-on-surface">${s.date}</span>
-            <p class="text-xs text-on-surface-variant">${s.start_time ? s.start_time.slice(0,5) : ''}</p>
+            <span class="text-sm font-medium text-on-surface">${s.date}</span>
+            <p class="text-xs text-primary-container font-bold">${s.start_time ? s.start_time.slice(0,5) : ''}</p>
           </td>
           <td class="px-6 py-5">
             <div class="flex flex-col items-center gap-1">
               <div class="w-32 h-1.5 bg-surface-container rounded-full overflow-hidden">
-                <div class="h-full ${barColor}" style="width:${Math.min(fillPct,100)}%"></div>
+                <div class="h-full ${barColor} transition-all duration-500" style="width:${Math.min(fillPct,100)}%"></div>
               </div>
-              <span class="text-xs font-medium text-on-surface-variant">${fillPct.toFixed(0)}% (${s.current_occupancy}/${s.total_capacity})</span>
+              <span class="text-[10px] font-medium text-on-surface-variant uppercase tracking-tighter">
+                ${fillPct.toFixed(1)}% (${s.current_occupancy}/${s.total_capacity})
+              </span>
             </div>
           </td>
           <td class="px-6 py-5 text-center">
-            <span class="text-sm font-bold ${predColor}">${s.predicted_occupancy ? s.predicted_occupancy.toFixed(0)+'%' : '—'}</span>
-            <p class="text-[10px] uppercase tracking-tighter ${predColor}">${predLabel}</p>
+            <span class="text-sm font-black ${predColor}">${predVal}</span>
+            <p class="text-[9px] uppercase font-black tracking-widest ${predColor}">${predLabel}</p>
           </td>
           <td class="px-6 py-5">
             <div class="flex justify-end gap-2">
-              <button onclick="editPrice(${s.showtime_id}, ${s.base_price})" class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/50 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-sm">edit</span> Edit Price
+              <button onclick="editPrice(${s.showtime_id}, ${s.base_price})" class="flex items-center gap-1 px-3 py-1.5 rounded bg-surface-variant/30 text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all">
+                <span class="material-symbols-outlined text-sm">edit_square</span> Edit
               </button>
             </div>
           </td>
         </tr>`;
     }).join('');
-  } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-error">Error loading showtimes.</td></tr>'; }
+  } catch(e) { 
+    console.error(e);
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-error">Error connecting to server.</td></tr>'; 
+  }
 }
 
 async function editPrice(showtimeId, currentPrice) {

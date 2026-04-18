@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>CineBook | User Management Console</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-surface-variant": "#bbc9cf",
+            "primary-container": "#00d4ff",
+            "surface": "#131313",
+            "surface-container-high": "#2a2a2a",
+            "surface-container-low": "#1c1b1b",
+            "surface-container": "#201f1f",
+            "surface-container-highest": "#353534",
+            "background": "#0f0f0f",
+            "on-surface": "#e5e2e1",
+            "primary": "#a8e8ff",
+            "error": "#ffb4ab",
+            "secondary": "#e0b6ff",
+            "tertiary-container": "#feb528",
+          },
+          fontFamily: { "headline": ["Manrope"], "body": ["Inter"] },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .purple-glow { text-shadow: 0 0 15px rgba(157,78,221,0.6); color: #9d4edd; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(.4,0,.2,1); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Modal */
+    #edit-modal { display: none; }
+    #edit-modal.open { display: flex; }
+    @keyframes modal-in { from { opacity:0; transform:scale(0.95) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
+    .modal-panel { animation: modal-in 0.25s ease forwards; }
+
+    /* Row slide-in */
+    @keyframes row-in { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:translateX(0); } }
+    .row-in { animation: row-in 0.3s ease forwards; }
+
+    /* Input style */
+    .field-input {
+      width: 100%;
+      background: #131313;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0.5rem;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.875rem;
+      color: #e5e2e1;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field-input:focus { border-color: #00d4ff; box-shadow: 0 0 0 2px rgba(0,212,255,0.15); }
+    .field-label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; color: #bbc9cf; margin-bottom: 6px; }
+
+    select.field-input option { background: #1c1b1b; }
+
+    /* Save flash on row */
+    @keyframes save-flash { 0%,100% { background:transparent; } 50% { background: rgba(0,212,255,0.06); } }
+    .saved-flash { animation: save-flash 0.6s ease; }
+  </style>
+</head>
+<body class="bg-[#0f0f0f] text-on-surface font-body">
+
+<!-- Toast -->
+<div id="toast" class="toast bg-[#1c1b1b] border border-white/10 rounded-xl px-5 py-4 shadow-2xl flex items-center gap-3 min-w-[280px]">
+  <span id="toast-icon" class="material-symbols-outlined text-xl text-emerald-400">check_circle</span>
+  <span id="toast-msg" class="text-sm font-medium">Saved</span>
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-modal" class="fixed inset-0 z-50 items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+  <div class="modal-panel bg-[#131313] border border-white/10 rounded-2xl shadow-2xl w-full max-w-lg">
+
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-3">
+        <div id="modal-avatar" class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#353534] to-[#201f1f] flex items-center justify-center font-black text-primary text-lg border border-white/5">A</div>
+        <div>
+          <h3 class="font-bold font-headline text-on-surface text-lg" id="modal-title">Edit User</h3>
+          <p class="text-xs text-on-surface-variant" id="modal-email">user@example.com</p>
+        </div>
+      </div>
+      <button onclick="closeModal()" class="p-2 hover:bg-[#353534]/40 rounded-full transition-all">
+        <span class="material-symbols-outlined text-on-surface-variant">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="px-8 py-6 flex flex-col gap-5">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="field-label">Full Name</label>
+          <input id="edit-name" class="field-input" type="text" placeholder="Full name"/>
+        </div>
+        <div>
+          <label class="field-label">Email Address</label>
+          <input id="edit-email" class="field-input" type="email" placeholder="email@example.com"/>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="field-label">Role</label>
+          <select id="edit-role" class="field-input">
+            <option value="customer">Customer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Favourite Genre</label>
+          <select id="edit-genre" class="field-input">
+            <option value="">Universal</option>
+            <option value="Action">Action</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Drama">Drama</option>
+            <option value="Horror">Horror</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Romance">Romance</option>
+            <option value="Animation">Animation</option>
+            <option value="Documentary">Documentary</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="field-label">Loyalty Points</label>
+        <input id="edit-points" class="field-input" type="number" min="0" placeholder="0"/>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="border border-error/20 rounded-xl p-4 bg-error/5 flex items-center justify-between">
+        <div>
+          <p class="text-sm font-bold text-error">Danger Zone</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Permanently remove this user account.</p>
+        </div>
+        <button id="modal-delete-btn" onclick="deleteUser()" class="flex items-center gap-1.5 px-3 py-2 bg-error/10 hover:bg-error/20 text-error text-xs font-bold rounded-lg border border-error/20 hover:border-error/40 transition-all">
+          <span class="material-symbols-outlined text-sm">delete</span>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-8 py-5 border-t border-white/5 flex items-center justify-end gap-3">
+      <button onclick="closeModal()" class="px-5 py-2.5 text-sm text-on-surface-variant hover:text-on-surface border border-white/10 hover:border-white/20 rounded-lg transition-all">
+        Cancel
+      </button>
+      <button onclick="saveUser()" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary/20 to-primary-container/20 border border-primary/30 text-primary text-sm font-bold rounded-lg hover:brightness-125 hover:border-primary/60 transition-all shadow-[0_0_12px_rgba(0,212,255,0.1)]">
+        <span class="material-symbols-outlined text-sm">save</span>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav class="fixed top-0 z-50 w-full bg-[#131313]/60 backdrop-blur-xl shadow-2xl flex justify-between items-center px-8 py-4">
+  <div class="flex items-center gap-8">
+    <span class="text-2xl font-black tracking-tighter text-[#00d4ff] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)] font-headline">CineBook</span>
+    <div class="hidden md:flex gap-6 items-center">
+      <a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors" href="adminPage.html">Dashboard</a>
+      <a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors" href="inventory.html">Inventory</a>
+      <a class="font-headline tracking-tight text-[#00d4ff] font-bold border-b-2 border-[#00d4ff] pb-1" href="#">Users</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button onclick="localStorage.clear(); window.location.href='homepage.html'" class="p-2 hover:bg-[#353534]/40 rounded-full flex items-center gap-2 group">
+      <span class="material-symbols-outlined text-[#bbc9cf] group-hover:text-error">logout</span>
+      <span class="text-xs font-bold uppercase tracking-widest text-[#bbc9cf] group-hover:text-error transition-colors">Logout</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-24 bg-[#0e0e0e] shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-40 hidden xl:flex flex-col gap-2">
+  <div class="px-6 mb-6">
+    <h3 class="text-lg font-bold text-[#e5e2e1] font-headline">CineBook Elite</h3>
+    <p class="text-xs text-on-surface-variant font-medium">Management Console</p>
+  </div>
+  <nav class="flex flex-col gap-1">
+    <a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-all hover:translate-x-1" href="adminPage.html">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="text-sm font-medium">Dashboard</span>
+    </a>
+    <a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-all hover:translate-x-1" href="inventory.html">
+      <span class="material-symbols-outlined">inventory_2</span>
+      <span class="text-sm font-medium">Inventory</span>
+    </a>
+    <a class="bg-gradient-to-r from-[#00d4ff]/20 to-transparent text-[#00d4ff] border-l-4 border-[#00d4ff] px-6 py-3 flex items-center gap-3" href="#">
+      <span class="material-symbols-outlined">group</span>
+      <span class="text-sm font-medium">Users</span>
+    </a>
+  </nav>
+</aside>
+
+<!-- Main -->
+<main class="xl:pl-64 pt-32 pb-12 min-h-screen">
+  <div class="max-w-7xl mx-auto px-8">
+
+    <header class="mb-10 relative">
+      <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary-container/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <div class="flex items-end justify-between flex-wrap gap-4">
+        <div>
+          <h1 class="text-4xl md:text-5xl font-extrabold font-headline tracking-tight mb-2">
+            System <span class="purple-glow">User Directory</span>
+          </h1>
+          <p id="user-count-label" class="text-on-surface-variant font-medium tracking-wide">Loading user data…</p>
+        </div>
+        <!-- Search -->
+        <div class="flex items-center gap-3">
+          <div class="relative flex items-center bg-[#1c1b1b] border border-white/10 rounded-lg px-4 py-2.5">
+            <span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+            <input id="search-input" oninput="filterUsers()" class="bg-transparent border-none focus:ring-0 text-sm text-on-surface w-44 placeholder:text-on-surface-variant/50" placeholder="Search users…" type="text"/>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="bg-surface-container-low rounded-xl border border-white/5 shadow-2xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-surface-container-high/50 text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant">
+            <tr>
+              <th class="px-8 py-5">User Identity</th>
+              <th class="px-8 py-5">Contact Info</th>
+              <th class="px-8 py-5 text-center">Role</th>
+              <th class="px-8 py-5">Genre Preference</th>
+              <th class="px-8 py-5 text-right">Loyalty Points</th>
+              <th class="px-8 py-5 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body" class="divide-y divide-white/5">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DEMO DATA
+// ─────────────────────────────────────────────────────────────────────────────
+let users = [
+  { user_id: 1, name: "Admin User",     email: "admin@cinebook.com",  role: "admin",    favorite_genre: "",         loyalty_points: 0    },
+  { user_id: 2, name: "Alice Nguyen",   email: "alice@example.com",   role: "customer", favorite_genre: "Sci-Fi",   loyalty_points: 340  },
+  { user_id: 3, name: "Bob Martinez",   email: "bob@example.com",     role: "customer", favorite_genre: "Action",   loyalty_points: 210  },
+  { user_id: 4, name: "Carol Kim",      email: "carol@example.com",   role: "customer", favorite_genre: "Drama",    loyalty_points: 580  },
+  { user_id: 5, name: "David Okafor",   email: "david@example.com",   role: "customer", favorite_genre: "Thriller", loyalty_points: 95   },
+  { user_id: 6, name: "Eva Santos",     email: "eva@example.com",     role: "customer", favorite_genre: "Horror",   loyalty_points: 420  },
+  { user_id: 7, name: "Frank Lee",      email: "frank@example.com",   role: "customer", favorite_genre: "Comedy",   loyalty_points: 175  },
+  { user_id: 8, name: "Grace Patel",    email: "grace@example.com",   role: "customer", favorite_genre: "Romance",  loyalty_points: 630  },
+  { user_id: 9, name: "Henry Dubois",   email: "henry@example.com",   role: "customer", favorite_genre: "Action",   loyalty_points: 50   },
+  { user_id:10, name: "Isabel Torres",  email: "isabel@example.com",  role: "customer", favorite_genre: "Animation",loyalty_points: 290  },
+];
+
+let editingId = null;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Toast
+// ─────────────────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  const icon  = document.getElementById('toast-icon');
+  const msgEl = document.getElementById('toast-msg');
+  const colors = { success: 'text-emerald-400', error: 'text-error', info: 'text-primary' };
+  const icons  = { success: 'check_circle', error: 'error', info: 'info' };
+  icon.textContent = icons[type] || 'check_circle';
+  icon.className   = `material-symbols-outlined text-xl ${colors[type] || colors.success}`;
+  msgEl.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Render table
+// ─────────────────────────────────────────────────────────────────────────────
+function renderTable(list) {
+  const tbody = document.getElementById('users-table-body');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-12 text-on-surface-variant">No users found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map((u, i) => {
+    const roleColor  = u.role === 'admin'
+      ? 'text-primary-container bg-primary-container/10'
+      : 'text-on-surface-variant bg-surface-container-highest';
+    const initials   = u.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const avatarGrad = u.role === 'admin'
+      ? 'from-primary-container/30 to-primary/10'
+      : 'from-[#353534] to-[#201f1f]';
+    return `
+      <tr id="row-${u.user_id}" class="hover:bg-surface-container transition-all row-in" style="animation-delay:${i*35}ms">
+        <td class="px-8 py-5">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-black text-primary text-sm shadow-lg border border-white/5 shrink-0">
+              ${initials}
+            </div>
+            <div>
+              <p class="font-bold font-headline text-on-surface">${u.name}</p>
+              <p class="text-[10px] text-on-surface-variant/60">ID #${u.user_id}</p>
+            </div>
+          </div>
+        </td>
+        <td class="px-8 py-5 text-on-surface-variant text-sm">${u.email}</td>
+        <td class="px-8 py-5 text-center">
+          <span class="px-3 py-1 rounded text-[10px] font-black tracking-widest ${roleColor}">
+            ${u.role.toUpperCase()}
+          </span>
+        </td>
+        <td class="px-8 py-5 text-on-surface-variant text-sm">
+          ${u.favorite_genre
+            ? `<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary/60 inline-block"></span>${u.favorite_genre}</span>`
+            : `<span class="italic text-on-surface-variant/40">Universal</span>`}
+        </td>
+        <td class="px-8 py-5 text-right">
+          <span class="text-lg font-black font-headline text-[#00d4ff]">${u.loyalty_points.toLocaleString()}</span>
+          <p class="text-[8px] text-on-surface-variant/40 uppercase font-bold tracking-tighter">PTS EARNED</p>
+        </td>
+        <td class="px-8 py-5 text-center">
+          <button onclick="openModal(${u.user_id})" class="flex items-center gap-1.5 mx-auto px-3 py-2 bg-[#1c1b1b] hover:bg-[#2a2a2a] border border-white/10 hover:border-primary/40 hover:text-primary text-on-surface-variant text-xs font-bold rounded-lg transition-all">
+            <span class="material-symbols-outlined text-sm" style="font-size:15px">edit</span>
+            Edit
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function refreshTable() {
+  const q = (document.getElementById('search-input').value || '').toLowerCase();
+  const filtered = q
+    ? users.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.includes(q))
+    : users;
+  document.getElementById('user-count-label').textContent =
+    `Managing ${filtered.length} of ${users.length} user identities across the platform.`;
+  renderTable(filtered);
+}
+
+function filterUsers() { refreshTable(); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modal
+// ─────────────────────────────────────────────────────────────────────────────
+function openModal(userId) {
+  const u = users.find(u => u.user_id === userId);
+  if (!u) return;
+  editingId = userId;
+
+  const initials = u.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('modal-avatar').textContent = initials;
+  document.getElementById('modal-title').textContent  = u.name;
+  document.getElementById('modal-email').textContent  = u.email;
+
+  document.getElementById('edit-name').value   = u.name;
+  document.getElementById('edit-email').value  = u.email;
+  document.getElementById('edit-role').value   = u.role;
+  document.getElementById('edit-genre').value  = u.favorite_genre || '';
+  document.getElementById('edit-points').value = u.loyalty_points;
+
+  // Prevent admin from deleting themselves (user_id 1 in demo)
+  const deleteBtn = document.getElementById('modal-delete-btn');
+  deleteBtn.disabled = (userId === 1);
+  deleteBtn.classList.toggle('opacity-40', userId === 1);
+  deleteBtn.classList.toggle('cursor-not-allowed', userId === 1);
+
+  const modal = document.getElementById('edit-modal');
+  modal.classList.add('open');
+  // Re-trigger animation
+  const panel = modal.querySelector('.modal-panel');
+  panel.style.animation = 'none';
+  requestAnimationFrame(() => { panel.style.animation = ''; });
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingId = null;
+}
+
+// Close on backdrop click
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Close on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Save
+// ─────────────────────────────────────────────────────────────────────────────
+function saveUser() {
+  if (!editingId) return;
+
+  const name   = document.getElementById('edit-name').value.trim();
+  const email  = document.getElementById('edit-email').value.trim();
+  const role   = document.getElementById('edit-role').value;
+  const genre  = document.getElementById('edit-genre').value;
+  const points = parseInt(document.getElementById('edit-points').value, 10);
+
+  if (!name)  { shakeField('edit-name');  return; }
+  if (!email) { shakeField('edit-email'); return; }
+  if (isNaN(points) || points < 0) { shakeField('edit-points'); return; }
+
+  const idx = users.findIndex(u => u.user_id === editingId);
+  if (idx === -1) return;
+
+  users[idx] = { ...users[idx], name, email, role, favorite_genre: genre, loyalty_points: points };
+
+  closeModal();
+  refreshTable();
+
+  // Flash the updated row
+  setTimeout(() => {
+    const row = document.getElementById(`row-${editingId}`);
+    if (row) row.classList.add('saved-flash');
+    setTimeout(() => row && row.classList.remove('saved-flash'), 700);
+  }, 50);
+
+  showToast(`${name}'s profile updated successfully`, 'success');
+}
+
+function shakeField(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = '#ffb4ab';
+  el.focus();
+  setTimeout(() => el.style.borderColor = '', 1500);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Delete
+// ─────────────────────────────────────────────────────────────────────────────
+function deleteUser() {
+  if (!editingId) return;
+  const u = users.find(u => u.user_id === editingId);
+  if (!u) return;
+
+  const confirmed = confirm(`Delete "${u.name}"? This action cannot be undone.`);
+  if (!confirmed) return;
+
+  users = users.filter(u => u.user_id !== editingId);
+  closeModal();
+  refreshTable();
+  showToast(`${u.name} has been removed`, 'error');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────────────────────
+refreshTable();
+</script>
+</body>
+</html>

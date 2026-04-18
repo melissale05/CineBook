@@ -235,7 +235,7 @@
 <div class="grid grid-rows-10 gap-3">
 <!-- Simplified Generation for demonstration (Rows A-J) -->
 <div class="flex items-center gap-4">
-<span class="w-4 text-[10px] font-black text-on-surface-variant/40">A</span>
+<!--<span class="w-4 text-[10px] font-black text-on-surface-variant/40">A</span>-->
 <div class="flex gap-2">
 <!-- Example Seats -->
 <div class="relative seat-wrapper"><div class="w-6 h-7 rounded-t-lg bg-surface-container-highest"></div></div>
@@ -289,29 +289,29 @@
 </main>
 <!-- Bottom Action Bar -->
 <footer class="sticky bottom-0 z-40 bg-[#0e0e0e]/80 backdrop-blur-2xl border-t border-outline-variant/10 shadow-[0_-10px_40px_rgba(0,0,0,0.6)] py-6 px-12">
-<div class="max-w-[1920px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-<div class="flex gap-12">
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Tickets Selected</span>
-<div class="flex items-center gap-2">
-<span class="text-3xl font-black font-headline">02</span>
-<span class="text-xs text-on-surface-variant font-medium">(G4, G5)</span>
-</div>
-</div>
-<div class="flex flex-col border-l border-outline-variant/20 pl-12">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Total Payable</span>
-<div class="flex items-baseline gap-2">
-<span class="text-3xl font-black font-headline text-primary-container">$24.00</span>
-<span class="text-[10px] text-tertiary-container line-through font-bold">$29.00</span>
-</div>
-<span class="text-[9px] text-tertiary uppercase font-black tracking-tighter">Loyalty: -$5.00 Applied</span>
-</div>
-</div>
-<button class="bg-gradient-to-r from-primary-container to-secondary-container text-on-primary font-black uppercase tracking-widest px-12 py-5 rounded-xl shadow-[0_0_25px_rgba(0,212,255,0.4)] hover:shadow-[0_0_40px_rgba(0,212,255,0.6)] hover:scale-[1.02] transition-all duration-300 flex items-center gap-3 active:scale-95">
-                Confirm Booking
-                <span class="material-symbols-outlined font-bold">arrow_forward</span>
-</button>
-</div>
+  <div class="max-w-[1920px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+    <div class="flex gap-12">
+      <div class="flex flex-col">
+        <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Tickets Selected</span>
+        <div class="flex items-center gap-2">
+          <span id="ticket-count-display" class="text-3xl font-black font-headline">00</span>
+          <span id="ticket-seats-display" class="text-xs text-on-surface-variant font-medium">(none)</span>
+        </div>
+      </div>
+      <div class="flex flex-col border-l border-outline-variant/20 pl-12">
+        <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Total Payable</span>
+        <div class="flex items-baseline gap-2">
+          <span id="total-price-display" class="text-3xl font-black font-headline text-primary-container">$0.00</span>
+          <span id="total-price-display" class="text-[10px] text-tertiary-container line-through font-bold">$29.00</span>
+        </div>
+        <span id="loyalty-label" class="text-[9px] text-tertiary uppercase font-black tracking-tighter">Standard Pricing</span>
+      </div>
+    </div>
+    <button id="confirm-booking-btn" class="bg-gradient-to-r from-primary-container to-secondary-container text-on-primary font-black uppercase tracking-widest px-12 py-5 rounded-xl shadow-[0_0_25px_rgba(0,212,255,0.4)] hover:shadow-[0_0_40px_rgba(0,212,255,0.6)] hover:scale-[1.02] transition-all duration-300 flex items-center gap-3 active:scale-95">
+                  Confirm Booking
+                  <span class="material-symbols-outlined font-bold">arrow_forward</span>
+    </button>
+  </div>
 </footer>
 <!-- Global Footer -->
 <div class="bg-[#0e0e0e] w-full py-12 border-t border-[#353534]/15 flex flex-col items-center justify-center gap-6 px-4">
@@ -492,17 +492,34 @@ function toggleSeat(seat) {
 }
 
 // ── Bottom action bar ─────────────────────────────────────────────────────────
-const ticketCountEl  = document.querySelector('.text-3xl.font-black.font-headline');
+/*const ticketCountEl  = document.querySelector('.text-3xl.font-black.font-headline');
 const ticketSeatsEl  = document.querySelector('.text-xs.text-on-surface-variant.font-medium');
 const totalPriceEl   = document.querySelector('.text-3xl.font-black.font-headline.text-primary-container');
 const loyaltyEl      = document.querySelector('.text-\\[9px\\].text-tertiary');
 const confirmBtn     = document.querySelector('footer .bg-gradient-to-r');
+*/
+
+const ticketCountEl  = document.getElementById('ticket-count-display');
+const ticketSeatsEl  = document.getElementById('ticket-seats-display');
+const totalPriceEl   = document.getElementById('total-price-display');
+const loyaltyEl      = document.getElementById('loyalty-label');
+const confirmBtn     = document.getElementById('confirm-booking-btn');
+
+/*const ticketCountEl  = document.getElementById('ticket-count');
+const ticketSeatsEl  = document.getElementById('ticket-seats');
+const totalPriceEl   = document.getElementById('total-price');
+const loyaltyEl      = document.getElementById('loyalty-label'); // Match the ID above
+*/
 
 function updatePriceBar() {
   const count = selectedSeats.size;
-  if (ticketCountEl) ticketCountEl.textContent = String(count).padStart(2, '0');
-  if (ticketSeatsEl) ticketSeatsEl.textContent = count ? `(${[...selectedSeats].join(', ')})` : '(none)';
+  //if (ticketCountEl) 
+  ticketCountEl.textContent = String(count).padStart(2, '0');
+  //if (ticketSeatsEl) 
+  ticketSeatsEl.textContent = count ? `(${[...selectedSeats].join(', ')})` : '(none)';
   const total = currentPrice * count;
+  //totalPriceEl.innerHTML = `$${total.toFixed(2)}`;
+  
   if (totalPriceEl) {
     totalPriceEl.innerHTML = `$${total.toFixed(2)}`;
     if (modifierPct !== 0) {
@@ -510,6 +527,7 @@ function updatePriceBar() {
       totalPriceEl.innerHTML += ` <span class="text-[10px] ${modifierPct < 0 ? 'text-tertiary-container' : 'text-error'} line-through ml-1 font-bold">$${base.toFixed(2)}</span>`;
     }
   }
+  
   if (loyaltyEl) {
     if (modifierPct < 0) loyaltyEl.textContent = `Last-minute deal: ${Math.abs(modifierPct)}% off!`;
     else if (modifierPct > 0) loyaltyEl.textContent = `High demand: +${modifierPct}% surcharge`;

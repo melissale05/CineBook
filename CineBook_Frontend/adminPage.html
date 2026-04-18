@@ -1,534 +1,645 @@
-<!DOCTYPE html>
+Adminpage · HTML
+Copy
 
-<html class="dark" lang="en"><head>
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>CineBook | Predictive Demand Forecasting Engine</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "tertiary-container": "#feb528",
-                        "secondary-container": "#6d11ad",
-                        "on-surface-variant": "#bbc9cf",
-                        "inverse-on-surface": "#313030",
-                        "primary-container": "#00d4ff",
-                        "inverse-primary": "#00677e",
-                        "surface": "#131313",
-                        "outline-variant": "#3c494e",
-                        "surface-container-high": "#2a2a2a",
-                        "inverse-surface": "#e5e2e1",
-                        "primary-fixed": "#b4ebff",
-                        "on-primary": "#003642",
-                        "secondary-fixed-dim": "#e0b6ff",
-                        "secondary-fixed": "#f2daff",
-                        "surface-container-lowest": "#0e0e0e",
-                        "on-tertiary": "#432c00",
-                        "on-tertiary-fixed": "#281900",
-                        "on-secondary-fixed-variant": "#6a0baa",
-                        "surface-container": "#201f1f",
-                        "on-tertiary-container": "#6c4900",
-                        "tertiary": "#ffd9a1",
-                        "primary-fixed-dim": "#3cd7ff",
-                        "secondary": "#e0b6ff",
-                        "on-secondary-fixed": "#2e004e",
-                        "on-error-container": "#ffdad6",
-                        "surface-container-low": "#1c1b1b",
-                        "error": "#ffb4ab",
-                        "on-tertiary-fixed-variant": "#604100",
-                        "on-primary-container": "#00586b",
-                        "on-primary-fixed-variant": "#004e5f",
-                        "on-background": "#e5e2e1",
-                        "surface-variant": "#353534",
-                        "error-container": "#93000a",
-                        "outline": "#859398",
-                        "on-primary-fixed": "#001f27",
-                        "surface-tint": "#3cd7ff",
-                        "surface-dim": "#131313",
-                        "tertiary-fixed-dim": "#ffba3d",
-                        "on-surface": "#e5e2e1",
-                        "surface-bright": "#3a3939",
-                        "background": "#0f0f0f",
-                        "on-secondary": "#4c007d",
-                        "surface-container-highest": "#353534",
-                        "on-error": "#690005",
-                        "primary": "#a8e8ff",
-                        "on-secondary-container": "#d7a4ff",
-                        "tertiary-fixed": "#ffdeae"
-                    },
-                    fontFamily: {
-                        "headline": ["Manrope"],
-                        "body": ["Inter"],
-                        "label": ["Inter"]
-                    },
-                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
-                },
-            },
-        }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .bg-glass {
-            background: rgba(19, 19, 19, 0.6);
-            backdrop-filter: blur(20px);
-        }
-        .chart-grid {
-            background-image: radial-gradient(circle at 1px 1px, #353534 1px, transparent 0);
-            background-size: 24px 24px;
-        }
-        .purple-glow {
-            text-shadow: 0 0 15px rgba(157, 78, 221, 0.6);
-            color: #9d4edd;
-        }
-    </style>
-</head>
-<body class="bg-[#0f0f0f] text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
-<!-- Top Navigation (Shell Component) -->
-<nav class="fixed top-0 z-50 w-full bg-[#131313]/60 backdrop-blur-xl shadow-2xl shadow-black/60 flex justify-between items-center px-8 py-4 max-w-none">
-<div class="flex items-center gap-8">
-<span class="text-2xl font-black tracking-tighter text-[#00d4ff] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)] font-headline">CineBook</span>
-<div class="hidden md:flex gap-6 items-center">
-<a class="font-headline tracking-tight text-[#00d4ff] font-bold border-b-2 border-[#00d4ff] pb-1 transition-all duration-300" href="#">Dashboard</a>
-<a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors duration-300" href="#">Inventory</a>
-<a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors duration-300" href="#">Users</a>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<div class="relative flex items-center bg-[#353534]/40 rounded-full px-4 py-2 hover:bg-[#353534]/60 transition-all duration-300 group">
-<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface w-48 placeholder:text-on-surface-variant/50" placeholder="Search analytics..." type="text"/>
-</div>
-<button class="p-2 hover:bg-[#353534]/40 rounded-full transition-all duration-300 scale-95 active:scale-90">
-<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
-</button>
-<button class="p-2 hover:bg-[#353534]/40 rounded-full transition-all duration-300 scale-95 active:scale-90">
-<span class="material-symbols-outlined text-on-surface-variant" data-icon="account_circle">account_circle</span>
-</button>
-<button class="p-2 hover:bg-[#353534]/40 rounded-full transition-all duration-300 scale-95 active:scale-90 flex items-center gap-2 group">
-<span class="material-symbols-outlined text-[#bbc9cf] group-hover:text-error" data-icon="logout">logout</span>
-<span class="text-xs font-bold uppercase tracking-widest text-[#bbc9cf] group-hover:text-error transition-colors">Logout</span>
-</button>
-</div>
-</nav>
-<!-- Sidebar (Shell Component) -->
-<aside class="h-screen w-64 fixed left-0 top-0 pt-24 bg-[#0e0e0e] shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-40 hidden xl:flex flex-col gap-2">
-<div class="px-6 mb-6">
-<h3 class="text-lg font-bold text-[#e5e2e1] font-headline">CineBook Elite</h3>
-<p class="text-xs text-on-surface-variant font-medium">Management Console</p>
-</div>
-<nav class="flex flex-col h-full gap-2">
-<a class="bg-gradient-to-r from-[#00d4ff]/20 to-transparent text-[#00d4ff] border-l-4 border-[#00d4ff] px-6 py-3 flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-<span class="font-['Inter'] text-sm font-medium">Dashboard</span>
-</a>
-<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
-<span class="material-symbols-outlined" data-icon="movie">movie</span>
-<span class="font-['Inter'] text-sm font-medium">Action</span>
-</a>
-<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
-<span class="material-symbols-outlined" data-icon="rocket_launch">rocket_launch</span>
-<span class="font-['Inter'] text-sm font-medium">Sci-Fi</span>
-</a>
-<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
-<span class="material-symbols-outlined" data-icon="theaters">theaters</span>
-<span class="font-['Inter'] text-sm font-medium">Drama</span>
-</a>
-<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
-<span class="material-symbols-outlined" data-icon="warning">warning</span>
-<span class="font-['Inter'] text-sm font-medium">Alerts</span>
-</a>
-<a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-transform duration-300 hover:translate-x-1" href="#">
-<span class="material-symbols-outlined" data-icon="group">group</span>
-<span class="font-['Inter'] text-sm font-medium">Users</span>
-</a>
-<div class="mt-auto p-6">
-<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 rounded-lg font-bold text-sm hover:brightness-110 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)]">
-                    Book Now
-                </button>
-</div>
-</nav>
-</aside>
-<!-- Main Content Canvas -->
-<main class="xl:pl-64 pt-24 pb-12 min-h-screen">
-<div class="max-w-7xl mx-auto px-8">
-<!-- Header Section -->
-<header class="mb-12 relative">
-<div class="absolute -top-24 -left-24 w-96 h-96 bg-secondary-container/10 rounded-full blur-[120px]"></div>
-<h1 class="text-4xl md:text-5xl font-extrabold font-headline tracking-tight mb-2">
-                    Predictive <span class="purple-glow">Demand Forecasting</span> Engine
-                </h1>
-<p class="text-on-surface-variant font-medium tracking-wide">AI-driven occupancy modeling and revenue optimization metrics.</p>
-</header>
-<!-- Analytics Bento Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-<!-- Chart 1: Bar Chart -->
-<div class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden group">
-<div class="flex justify-between items-start mb-8">
-<div>
-<h2 class="text-lg font-bold font-headline mb-1">Predicted Occupancy vs Total Capacity</h2>
-<p class="text-xs text-on-surface-variant uppercase tracking-widest">Global Theater Network • Live</p>
-</div>
-<div class="flex gap-4">
-<div class="flex items-center gap-2">
-<div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-<span class="text-[10px] font-bold text-on-surface-variant">PREDICTED</span>
-</div>
-<div class="flex items-center gap-2">
-<div class="w-3 h-3 rounded-full bg-error shadow-[0_0_10px_rgba(255,180,171,0.5)]"></div>
-<span class="text-[10px] font-bold text-on-surface-variant">CAPACITY</span>
-</div>
-</div>
-</div>
-<div class="h-64 flex items-end justify-between gap-4 chart-grid relative">
-<!-- Mock Bars -->
-<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
-<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
-<div class="w-full bg-emerald-500 rounded-t h-[60%] z-10 relative"></div>
-<span class="text-[10px] text-on-surface-variant mt-2">Mon</span>
-</div>
-<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
-<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
-<div class="w-full bg-emerald-500 rounded-t h-[75%] z-10 relative"></div>
-<span class="text-[10px] text-on-surface-variant mt-2">Tue</span>
-</div>
-<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
-<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
-<div class="w-full bg-emerald-500 rounded-t h-[92%] z-10 relative"></div>
-<span class="text-[10px] text-on-surface-variant mt-2">Wed</span>
-</div>
-<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
-<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
-<div class="w-full bg-emerald-500 rounded-t h-[85%] z-10 relative"></div>
-<span class="text-[10px] text-on-surface-variant mt-2">Thu</span>
-</div>
-<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
-<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
-<div class="w-full bg-emerald-500 rounded-t h-[98%] z-10 relative"></div>
-<span class="text-[10px] text-on-surface-variant mt-2 text-error font-bold">Fri</span>
-</div>
-<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
-<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
-<div class="w-full bg-emerald-500 rounded-t h-[95%] z-10 relative"></div>
-<span class="text-[10px] text-on-surface-variant mt-2">Sat</span>
-</div>
-<div class="flex flex-col items-center gap-1 w-full max-w-[40px]">
-<div class="w-full bg-error/20 rounded-t h-full absolute bottom-0"></div>
-<div class="w-full bg-emerald-500 rounded-t h-[70%] z-10 relative"></div>
-<span class="text-[10px] text-on-surface-variant mt-2">Sun</span>
-</div>
-</div>
-</div>
-<!-- Chart 2: Line Chart -->
-<div class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden group">
-<div class="flex justify-between items-start mb-8">
-<div>
-<h2 class="text-lg font-bold font-headline mb-1">Predicted Revenue Trend</h2>
-<p class="text-xs text-on-surface-variant uppercase tracking-widest">Quarterly Forecasts • Aggregated</p>
-</div>
-<div class="bg-[#353534]/40 px-3 py-1 rounded text-[10px] font-bold text-primary tracking-tighter uppercase border border-primary/20">Target: $4.2M</div>
-</div>
-<div class="h-64 chart-grid relative flex items-end">
-<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 400 200">
-<defs>
-<lineargradient id="gradient-line" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" stop-color="#00d4ff" stop-opacity="0.5"></stop>
-<stop offset="100%" stop-color="#00d4ff" stop-opacity="0"></stop>
-</lineargradient>
-</defs>
-<path d="M0,180 Q50,160 100,100 T200,80 T300,40 T400,10 V200 H0 Z" fill="url(#gradient-line)"></path>
-<path class="drop-shadow-[0_0_10px_rgba(0,212,255,0.8)]" d="M0,180 Q50,160 100,100 T200,80 T300,40 T400,10" fill="none" stroke="#00d4ff" stroke-linecap="round" stroke-width="4"></path>
-</svg>
-<div class="absolute bottom-0 w-full flex justify-between px-2 pb-2">
-<span class="text-[10px] text-on-surface-variant">Wk 01</span>
-<span class="text-[10px] text-on-surface-variant">Wk 04</span>
-<span class="text-[10px] text-on-surface-variant">Wk 08</span>
-<span class="text-[10px] text-on-surface-variant">Wk 12</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Smart Alerts Panel -->
-<section class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl">
-<div class="flex items-center justify-between mb-8">
-<div class="flex items-center gap-3">
-<div class="p-2 bg-error/10 rounded-lg">
-<span class="material-symbols-outlined text-error" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
-</div>
-<div>
-<h2 class="text-xl font-bold font-headline">Smart Capacity Alerts</h2>
-<p class="text-xs text-on-surface-variant tracking-widest uppercase">Action Required • AI Recommendations</p>
-</div>
-</div>
-<button class="text-xs font-bold text-primary hover:underline transition-all">Dismiss All</button>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- Alert Card 1 -->
-<div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 border-error hover:bg-surface-container-high transition-all duration-300 relative group">
-<div class="flex justify-between items-start mb-4">
-<div class="bg-error/20 text-error text-[10px] font-black px-2 py-1 rounded">CRITICAL</div>
-<span class="text-[10px] text-on-surface-variant font-bold">Today, 20:00</span>
-</div>
-<h3 class="text-lg font-bold font-headline mb-1">Oppenheimer</h3>
-<p class="text-sm text-on-surface-variant mb-4">Predicted occupancy reaching <span class="text-error font-bold">92%</span> across all IMAX screens.</p>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: ADD SCREENING</span>
-<button class="bg-error text-on-error p-1.5 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
-</button>
-</div>
-</div>
-<!-- Alert Card 2 -->
-<div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 border-error hover:bg-surface-container-high transition-all duration-300 relative group">
-<div class="flex justify-between items-start mb-4">
-<div class="bg-error/20 text-error text-[10px] font-black px-2 py-1 rounded">CRITICAL</div>
-<span class="text-[10px] text-on-surface-variant font-bold">Tomorrow, 14:00</span>
-</div>
-<h3 class="text-lg font-bold font-headline mb-1">Dune: Part Two</h3>
-<p class="text-sm text-on-surface-variant mb-4">Private booking conflict detected. Predicted demand <span class="text-error font-bold">exceeds</span> available seats.</p>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: UPGRADE THEATER</span>
-<button class="bg-error text-on-error p-1.5 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
-</button>
-</div>
-</div>
-<!-- Alert Card 3 -->
-<div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 border-tertiary-container hover:bg-surface-container-high transition-all duration-300 relative group">
-<div class="flex justify-between items-start mb-4">
-<div class="bg-tertiary-container/20 text-tertiary-container text-[10px] font-black px-2 py-1 rounded">WARNING</div>
-<span class="text-[10px] text-on-surface-variant font-bold">Sun, 18:00</span>
-</div>
-<h3 class="text-lg font-bold font-headline mb-1">The Creator</h3>
-<p class="text-sm text-on-surface-variant mb-4">Low conversion for VIP Lounge. Predictive engine suggests <span class="text-tertiary-container font-bold">bundle pricing</span>.</p>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: APPLY DISCOUNT</span>
-<button class="bg-tertiary-container text-on-tertiary p-1.5 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-sm" data-icon="local_offer">local_offer</span>
-</button>
-</div>
-</div>
-</div>
-</section>
-</div>
-</main>
-<!-- Footer (Shell Component) -->
-<footer class="w-full py-12 mt-auto border-t border-[#353534]/15 bg-[#0e0e0e] flex flex-col items-center justify-center gap-6 px-4">
-<div class="flex flex-wrap justify-center gap-8 mb-4">
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all duration-300" href="#">Customer Portal</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#00d4ff] underline transition-all duration-300" href="#">Admin Dashboard</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all duration-300" href="#">Terms of Service</a>
-</div>
-<p class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] text-[#bbc9cf]/60">© 2024 CineBook Digital Proscenium</p>
-</footer>
-
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script>
-const API = 'http://localhost:8000/api';
-const token = localStorage.getItem('cb_token');
-const role  = localStorage.getItem('cb_role');
-if (!token || role !== 'admin') { window.location.href = 'homepage.html'; }
-
-function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
-
-// Nav wiring
-const navLinks = document.querySelectorAll('nav .hidden.md\\:flex a');
-if (navLinks[0]) navLinks[0].href = 'adminPage.html';
-if (navLinks[1]) navLinks[1].href = 'inventory.html';
-const logoutBtn = document.querySelector('button[class*="gap-2"]');
-if (logoutBtn) logoutBtn.addEventListener('click', () => { localStorage.clear(); window.location.href = 'homepage.html'; });
-const sidebarBookBtn = document.querySelector('aside button');
-if (sidebarBookBtn) sidebarBookBtn.addEventListener('click', () => window.location.href = 'inventory.html');
-
-// ── Stats cards (inject above charts) ────────────────────────────────────────
-async function loadStats() {
-  try {
-    const res = await fetch(`${API}/admin/stats`, { headers: authHeaders() });
-    if (!res.ok) return;
-    const s = await res.json();
-    const header = document.querySelector('main header');
-    if (!header) return;
-    const statsDiv = document.createElement('div');
-    statsDiv.className = 'grid grid-cols-2 md:grid-cols-5 gap-4 mb-10';
-    statsDiv.innerHTML = [
-      { label: 'Customers', value: s.total_customers, icon: 'group', color: 'text-primary' },
-      { label: 'Bookings', value: s.total_bookings, icon: 'confirmation_number', color: 'text-secondary' },
-      { label: 'Revenue', value: '$' + s.total_revenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}), icon: 'attach_money', color: 'text-tertiary-container' },
-      { label: 'Upcoming Shows', value: s.upcoming_shows, icon: 'movie', color: 'text-primary-container' },
-      { label: 'Active Alerts', value: s.active_alerts, icon: 'warning', color: s.active_alerts > 0 ? 'text-error' : 'text-on-surface-variant' },
-    ].map(c => `
-      <div class="bg-surface-container-low rounded-xl p-5 border border-white/5 flex items-center gap-4">
-        <span class="material-symbols-outlined ${c.color} text-3xl" style="font-variation-settings:'FILL' 1">${c.icon}</span>
-        <div>
-          <p class="text-2xl font-black font-headline ${c.color}">${c.value}</p>
-          <p class="text-[10px] text-on-surface-variant uppercase tracking-widest">${c.label}</p>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "tertiary-container": "#feb528",
+          "secondary-container": "#6d11ad",
+          "on-surface-variant": "#bbc9cf",
+          "primary-container": "#00d4ff",
+          "surface": "#131313",
+          "surface-container-high": "#2a2a2a",
+          "surface-container-low": "#1c1b1b",
+          "background": "#0f0f0f",
+          "on-surface": "#e5e2e1",
+          "primary": "#a8e8ff",
+          "error": "#ffb4ab",
+          "on-primary": "#003642",
+          "secondary": "#e0b6ff",
+          "on-tertiary": "#432c00",
+          "surface-container": "#201f1f",
+          "surface-container-highest": "#353534",
+          "outline-variant": "#3c494e",
+          "surface-variant": "#353534",
+        },
+        fontFamily: { "headline": ["Manrope"], "body": ["Inter"] },
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .material-symbols-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .bg-glass { background: rgba(19,19,19,0.6); backdrop-filter: blur(20px); }
+  .purple-glow { text-shadow: 0 0 15px rgba(157,78,221,0.6); color: #9d4edd; }
+  .chart-grid { background-image: radial-gradient(circle at 1px 1px, #353534 1px, transparent 0); background-size: 24px 24px; }
+  .bar-animated { transition: height 0.8s cubic-bezier(.4,0,.2,1); }
+  @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 8px rgba(255,180,171,0.4); } 50% { box-shadow: 0 0 20px rgba(255,180,171,0.8); } }
+  .alert-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+  @keyframes count-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .count-in { animation: count-up 0.5s ease forwards; }
+  @keyframes slide-in { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
+  .slide-in { animation: slide-in 0.4s ease forwards; }
+  .forecast-running .spinner { display: inline-block; }
+  .spinner { display: none; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fade-out { to { opacity: 0; transform: scale(0.95); } }
+  .resolving { animation: fade-out 0.4s ease forwards; }
+  .toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(.4,0,.2,1); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .line-chart-path { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw-line 1.5s ease forwards 0.3s; }
+  @keyframes draw-line { to { stroke-dashoffset: 0; } }
+</style>
+</head>
+<body class="bg-[#0f0f0f] text-on-surface font-body">
+ 
+<!-- Toast Notification -->
+<div id="toast" class="toast bg-surface-container-low border border-white/10 rounded-xl px-5 py-4 shadow-2xl flex items-center gap-3 min-w-[280px]">
+  <span id="toast-icon" class="material-symbols-outlined text-xl">check_circle</span>
+  <span id="toast-msg" class="text-sm font-medium">Done</span>
+</div>
+ 
+<!-- Top Navigation -->
+<nav class="fixed top-0 z-50 w-full bg-[#131313]/60 backdrop-blur-xl shadow-2xl flex justify-between items-center px-8 py-4">
+  <div class="flex items-center gap-8">
+    <span class="text-2xl font-black tracking-tighter text-[#00d4ff] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)] font-headline">CineBook</span>
+    <div class="hidden md:flex gap-6 items-center">
+      <a class="font-headline tracking-tight text-[#00d4ff] font-bold border-b-2 border-[#00d4ff] pb-1" href="#">Dashboard</a>
+      <a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors" href="inventory.html">Inventory</a>
+      <a class="font-headline tracking-tight text-[#bbc9cf] hover:text-[#e5e2e1] transition-colors" href="adminUsers.html">Users</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="relative flex items-center bg-[#353534]/40 rounded-full px-4 py-2">
+      <span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+      <input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface w-48 placeholder:text-on-surface-variant/50" placeholder="Search analytics..." type="text"/>
+    </div>
+    <button id="notif-btn" class="relative p-2 hover:bg-[#353534]/40 rounded-full transition-all">
+      <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+      <span id="notif-badge" class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+    </button>
+    <button onclick="localStorage.clear(); window.location.href='homepage.html'" class="p-2 hover:bg-[#353534]/40 rounded-full flex items-center gap-2 group">
+      <span class="material-symbols-outlined text-[#bbc9cf] group-hover:text-error">logout</span>
+      <span class="text-xs font-bold uppercase tracking-widest text-[#bbc9cf] group-hover:text-error transition-colors">Logout</span>
+    </button>
+  </div>
+</nav>
+ 
+<!-- Sidebar -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-24 bg-[#0e0e0e] shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-40 hidden xl:flex flex-col gap-2">
+  <div class="px-6 mb-6">
+    <h3 class="text-lg font-bold text-[#e5e2e1] font-headline">CineBook Elite</h3>
+    <p class="text-xs text-on-surface-variant font-medium">Management Console</p>
+  </div>
+  <nav class="flex flex-col gap-1">
+    <a class="bg-gradient-to-r from-[#00d4ff]/20 to-transparent text-[#00d4ff] border-l-4 border-[#00d4ff] px-6 py-3 flex items-center gap-3" href="#">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="text-sm font-medium">Dashboard</span>
+    </a>
+    <a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-all hover:translate-x-1" href="inventory.html">
+      <span class="material-symbols-outlined">inventory_2</span>
+      <span class="text-sm font-medium">Inventory</span>
+    </a>
+    <a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-all hover:translate-x-1" href="#alerts-section">
+      <span class="material-symbols-outlined">warning</span>
+      <span class="text-sm font-medium">Alerts</span>
+      <span id="sidebar-alert-count" class="ml-auto bg-error/20 text-error text-[10px] font-black px-2 py-0.5 rounded">4</span>
+    </a>
+    <a class="text-[#bbc9cf] px-6 py-3 hover:bg-[#1c1b1b] flex items-center gap-3 transition-all hover:translate-x-1" href="adminUsers.html">
+      <span class="material-symbols-outlined">group</span>
+      <span class="text-sm font-medium">Users</span>
+    </a>
+  </nav>
+  <div class="mt-auto p-6">
+    <button onclick="runForecastingEngine()" class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 rounded-lg font-bold text-sm hover:brightness-110 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] flex items-center justify-center gap-2" id="sidebar-run-btn">
+      <span class="material-symbols-outlined text-sm">auto_awesome</span>
+      Run Forecast
+    </button>
+  </div>
+</aside>
+ 
+<!-- Main Content -->
+<main class="xl:pl-64 pt-24 pb-12 min-h-screen">
+  <div class="max-w-7xl mx-auto px-8">
+ 
+    <!-- Header -->
+    <header class="mb-8 relative">
+      <div class="absolute -top-24 -left-24 w-96 h-96 bg-secondary-container/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <h1 class="text-4xl md:text-5xl font-extrabold font-headline tracking-tight mb-2">
+        Predictive <span class="purple-glow">Demand Forecasting</span> Engine
+      </h1>
+      <p class="text-on-surface-variant font-medium tracking-wide">AI-driven occupancy modeling and revenue optimization metrics.</p>
+    </header>
+ 
+    <!-- Stats Cards -->
+    <div id="stats-grid" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+      <!-- injected by JS -->
+    </div>
+ 
+    <!-- Charts Bento -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+ 
+      <!-- Bar Chart: Predicted Occupancy -->
+      <div class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h2 class="text-lg font-bold font-headline mb-1">Predicted Occupancy by Showtime</h2>
+            <p class="text-xs text-on-surface-variant uppercase tracking-widest">Top 7 upcoming • Live forecast</p>
+          </div>
+          <div class="flex gap-4">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+              <span class="text-[10px] font-bold text-on-surface-variant">PREDICTED</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-error/40"></div>
+              <span class="text-[10px] font-bold text-on-surface-variant">CAPACITY</span>
+            </div>
+          </div>
         </div>
-      </div>`).join('');
-    header.after(statsDiv);
-  } catch(e) {}
-}
-
-// ── Occupancy bar chart from real forecasts ──────────────────────────────────
-async function loadForecasts() {
-  try {
-    const res = await fetch(`${API}/admin/forecasts`, { headers: authHeaders() });
-    if (!res.ok) return;
-    const forecasts = await res.json();
-
-    // Bar chart: top 7 showtimes by predicted occupancy
-    const chartContainer = document.querySelector('.h-64.flex.items-end.justify-between');
-    if (chartContainer && forecasts.length) {
-      const top7 = forecasts.slice(0, 7);
-      const maxOcc = Math.max(...top7.map(f => f.predicted_occupancy || 0), 100);
-      chartContainer.innerHTML = top7.map(f => {
-        const pct = f.predicted_occupancy ? Math.min(f.predicted_occupancy, 100) : 0;
-        const barH = (pct / 100 * 90).toFixed(1);
-        const fillColor = pct >= 90 ? 'bg-error' : pct >= 70 ? 'bg-tertiary-container' : 'bg-emerald-500';
-        const label = f.start_time ? f.start_time.slice(0,5) : f.title.slice(0,5);
-        return `
-          <div class="flex flex-col items-center gap-1 flex-1">
-            <div class="w-full ${fillColor} rounded-t z-10 relative transition-all duration-500" style="height:${barH}%"></div>
-            <span class="text-[9px] text-on-surface-variant mt-1 truncate w-full text-center">${label}</span>
-            <span class="text-[8px] text-on-surface-variant/60">${pct.toFixed(0)}%</span>
-          </div>`;
-      }).join('');
-    }
-
-    // Revenue line chart: total per showtime
-    const totalRevenue = forecasts.reduce((a, f) => a + (f.predicted_revenue || 0), 0);
-    const targetEl = document.querySelector('.bg-\\[\\#353534\\]\\/40.px-3.py-1');
-    if (targetEl) targetEl.textContent = `Target: $${(totalRevenue/1000).toFixed(1)}K`;
-
-    // Forecasts table (injected below chart section)
-    const mainDiv = document.querySelector('.max-w-7xl');
-    if (mainDiv) {
-      let tableSection = document.getElementById('forecasts-table');
-      if (!tableSection) {
-        tableSection = document.createElement('section');
-        tableSection.id = 'forecasts-table';
-        tableSection.className = 'bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl mt-8';
-        mainDiv.appendChild(tableSection);
-      }
-      tableSection.innerHTML = `
-        <div class="flex items-center justify-between mb-6">
+        <div id="bar-chart" class="h-56 flex items-end justify-between gap-2 chart-grid relative px-2">
+          <!-- injected -->
+        </div>
+      </div>
+ 
+      <!-- Line Chart: Revenue Trend -->
+      <div class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h2 class="text-lg font-bold font-headline mb-1">Predicted Revenue Trend</h2>
+            <p class="text-xs text-on-surface-variant uppercase tracking-widest">7-day rolling forecast</p>
+          </div>
+          <div id="revenue-target-badge" class="bg-[#353534]/40 px-3 py-1 rounded text-[10px] font-bold text-primary tracking-tighter uppercase border border-primary/20">
+            Target: $0K
+          </div>
+        </div>
+        <div class="h-56 chart-grid relative">
+          <svg id="line-chart-svg" class="w-full h-full overflow-visible" viewBox="0 0 400 200" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-line" x1="0%" x2="0%" y1="0%" y2="100%">
+                <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path id="line-fill" d="" fill="url(#grad-line)"/>
+            <path id="line-path" d="" fill="none" stroke="#00d4ff" stroke-width="3" stroke-linecap="round" class="line-chart-path drop-shadow-[0_0_8px_rgba(0,212,255,0.8)]"/>
+          </svg>
+          <div class="absolute bottom-0 w-full flex justify-between px-2 pb-1">
+            <span class="text-[10px] text-on-surface-variant" id="day-label-0">Mon</span>
+            <span class="text-[10px] text-on-surface-variant" id="day-label-1">Tue</span>
+            <span class="text-[10px] text-on-surface-variant" id="day-label-2">Wed</span>
+            <span class="text-[10px] text-on-surface-variant" id="day-label-3">Thu</span>
+            <span class="text-[10px] text-on-surface-variant" id="day-label-4">Fri</span>
+            <span class="text-[10px] text-on-surface-variant" id="day-label-5">Sat</span>
+            <span class="text-[10px] text-on-surface-variant" id="day-label-6">Sun</span>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Forecast Table -->
+    <section class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
           <h2 class="text-xl font-bold font-headline">Forecast Table</h2>
-          <button onclick="runForecasting()" class="px-4 py-2 bg-primary-container text-on-primary text-xs font-bold rounded-lg hover:brightness-110 transition-all">
-            Run Forecasting Engine
+          <p class="text-xs text-on-surface-variant uppercase tracking-widest mt-1">Demand predictions per showtime</p>
+        </div>
+        <button id="run-forecast-btn" onclick="runForecastingEngine()" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary/20 to-primary-container/20 border border-primary/30 text-primary text-xs font-bold rounded-lg hover:brightness-125 hover:border-primary/60 transition-all shadow-[0_0_12px_rgba(0,212,255,0.15)]">
+          <div class="spinner" id="forecast-spinner"></div>
+          <span class="material-symbols-outlined text-sm" id="forecast-btn-icon">auto_awesome</span>
+          <span id="forecast-btn-text">Run Forecasting Engine</span>
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-surface-container-high/50 text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-bold">
+            <tr>
+              <th class="px-6 py-4">Movie</th>
+              <th class="px-6 py-4">Date / Time</th>
+              <th class="px-6 py-4">Theater</th>
+              <th class="px-6 py-4">Current Fill</th>
+              <th class="px-6 py-4">Predicted Occ.</th>
+              <th class="px-6 py-4">Predicted Rev.</th>
+              <th class="px-6 py-4">Recommendation</th>
+            </tr>
+          </thead>
+          <tbody id="forecast-tbody" class="divide-y divide-white/5">
+            <tr><td colspan="7" class="text-center py-12 text-on-surface-variant">Click <strong>Run Forecasting Engine</strong> to generate predictions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+ 
+    <!-- Smart Alerts Panel -->
+    <section id="alerts-section" class="bg-surface-container-low rounded-xl p-8 border border-white/5 shadow-2xl">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-error/10 rounded-lg alert-pulse">
+            <span class="material-symbols-outlined text-error material-symbols-filled" style="font-variation-settings:'FILL' 1">warning</span>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold font-headline">Smart Capacity Alerts</h2>
+            <p class="text-xs text-on-surface-variant tracking-widest uppercase">Action Required • AI Recommendations</p>
+          </div>
+          <span id="alert-count-badge" class="ml-2 bg-error/20 text-error text-xs font-black px-2.5 py-1 rounded">4 active</span>
+        </div>
+        <button onclick="dismissAllAlerts()" class="text-xs font-bold text-primary hover:underline transition-all">Dismiss All</button>
+      </div>
+      <div id="alerts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <!-- injected -->
+      </div>
+    </section>
+ 
+  </div>
+</main>
+ 
+<!-- Footer -->
+<footer class="xl:pl-64 w-full py-10 mt-auto border-t border-[#353534]/20 bg-[#0e0e0e] flex flex-col items-center gap-4 px-4">
+  <div class="flex flex-wrap justify-center gap-8">
+    <a class="text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all" href="#">Customer Portal</a>
+    <a class="text-xs uppercase tracking-widest text-[#00d4ff] underline" href="#">Admin Dashboard</a>
+    <a class="text-xs uppercase tracking-widest text-[#bbc9cf] hover:text-[#00d4ff] transition-all" href="#">Terms of Service</a>
+  </div>
+  <p class="text-[10px] uppercase tracking-[0.2em] text-[#bbc9cf]/60">© 2025 CineBook Digital Proscenium</p>
+</footer>
+ 
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DEMO DATA  — completely standalone, no backend needed
+// ─────────────────────────────────────────────────────────────────────────────
+ 
+const DEMO_STATS = {
+  total_customers: 847,
+  total_bookings: 3241,
+  total_revenue: 68452.50,
+  upcoming_shows: 23,
+  active_alerts: 4,
+};
+ 
+const DEMO_FORECASTS = [
+  { title: "Oppenheimer",    date: "2025-04-18", start_time: "20:00", theater_name: "IMAX Grand",     fill_pct: 91, predicted_occupancy: 96, predicted_revenue: 14280, recommendation_level: "add_screening",  tmdb_rating: 8.9, trending_status: "trending" },
+  { title: "Dune: Part Two", date: "2025-04-18", start_time: "14:00", theater_name: "Screen 4",       fill_pct: 84, predicted_occupancy: 89, predicted_revenue: 9860,  recommendation_level: "high_demand",    tmdb_rating: 8.5, trending_status: "trending" },
+  { title: "Poor Things",    date: "2025-04-19", start_time: "17:30", theater_name: "VIP Lounge",     fill_pct: 28, predicted_occupancy: 34, predicted_revenue: 5100,  recommendation_level: "adjust_price",   tmdb_rating: 7.9, trending_status: "normal" },
+  { title: "The Creator",    date: "2025-04-19", start_time: "20:30", theater_name: "Screen 2",       fill_pct: 55, predicted_occupancy: 61, predicted_revenue: 6420,  recommendation_level: "normal",         tmdb_rating: 7.1, trending_status: "normal" },
+  { title: "Saltburn",       date: "2025-04-20", start_time: "18:00", theater_name: "Screen 3",       fill_pct: 72, predicted_occupancy: 78, predicted_revenue: 7350,  recommendation_level: "high_demand",    tmdb_rating: 7.5, trending_status: "trending" },
+  { title: "Wonka",          date: "2025-04-20", start_time: "13:00", theater_name: "Family Hall",    fill_pct: 48, predicted_occupancy: 52, predicted_revenue: 4200,  recommendation_level: "normal",         tmdb_rating: 7.0, trending_status: "normal" },
+  { title: "Killers of the Flower Moon", date: "2025-04-21", start_time: "15:30", theater_name: "Screen 1", fill_pct: 38, predicted_occupancy: 43, predicted_revenue: 5870, recommendation_level: "adjust_price", tmdb_rating: 7.7, trending_status: "declining" },
+];
+ 
+const DEMO_ALERTS_INITIAL = [
+  { alert_id: 1, alert_type: "near_sold_out",  title: "Oppenheimer",    date: "2025-04-18", start_time: "20:00", message: "Predicted occupancy reaching <span class='text-error font-bold'>96%</span> across all IMAX screens. Immediate action recommended.", resolved: false },
+  { alert_id: 2, alert_type: "near_sold_out",  title: "Dune: Part Two", date: "2025-04-18", start_time: "14:00", message: "Booking velocity 3× above baseline. Predicted demand <span class='text-error font-bold'>exceeds</span> 89% of available seats.", resolved: false },
+  { alert_id: 3, alert_type: "low_occupancy",  title: "Poor Things",    date: "2025-04-19", start_time: "17:30", message: "Low conversion for VIP Lounge. Engine suggests <span class='text-tertiary-container font-bold'>bundle pricing</span> to lift fill rate above 50%.", resolved: false },
+  { alert_id: 4, alert_type: "price_optimize", title: "Killers of the Flower Moon", date: "2025-04-21", start_time: "15:30", message: "Trending status declining. <span class='text-tertiary-container font-bold'>Dynamic discount</span> of 12% projected to boost revenue $1,200.", resolved: false },
+];
+ 
+// Mutable working copy of alerts
+let alerts = DEMO_ALERTS_INITIAL.map(a => ({...a}));
+let forecastsGenerated = false;
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Toast helper
+// ─────────────────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  const icon  = document.getElementById('toast-icon');
+  const msgEl = document.getElementById('toast-msg');
+  icon.textContent = type === 'success' ? 'check_circle' : type === 'warning' ? 'warning' : 'info';
+  icon.className = `material-symbols-outlined text-xl ${type === 'success' ? 'text-emerald-400' : type === 'warning' ? 'text-tertiary-container' : 'text-primary'}`;
+  msgEl.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Stats Cards
+// ─────────────────────────────────────────────────────────────────────────────
+function renderStats(s) {
+  const grid = document.getElementById('stats-grid');
+  const cards = [
+    { label: 'Customers',      value: s.total_customers,                                              icon: 'group',               color: 'text-primary' },
+    { label: 'Bookings',       value: s.total_bookings,                                               icon: 'confirmation_number', color: 'text-secondary' },
+    { label: 'Revenue',        value: '$' + s.total_revenue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}), icon: 'attach_money', color: 'text-tertiary-container' },
+    { label: 'Upcoming Shows', value: s.upcoming_shows,                                               icon: 'movie',               color: 'text-primary-container' },
+    { label: 'Active Alerts',  value: s.active_alerts,                                                icon: 'warning',             color: s.active_alerts > 0 ? 'text-error' : 'text-on-surface-variant' },
+  ];
+  grid.innerHTML = cards.map(c => `
+    <div class="bg-surface-container-low rounded-xl p-5 border border-white/5 flex items-center gap-4 count-in">
+      <span class="material-symbols-outlined ${c.color} text-3xl" style="font-variation-settings:'FILL' 1">${c.icon}</span>
+      <div>
+        <p class="text-2xl font-black font-headline ${c.color}">${c.value}</p>
+        <p class="text-[10px] text-on-surface-variant uppercase tracking-widest">${c.label}</p>
+      </div>
+    </div>`).join('');
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Bar Chart
+// ─────────────────────────────────────────────────────────────────────────────
+function renderBarChart(forecasts) {
+  const container = document.getElementById('bar-chart');
+  const top7 = forecasts.slice(0, 7);
+  container.innerHTML = top7.map((f, i) => {
+    const pct      = Math.min(f.predicted_occupancy || 0, 100);
+    const barH     = (pct / 100 * 88).toFixed(1);
+    const fillColor = pct >= 90 ? 'bg-error' : pct >= 70 ? 'bg-[#feb528]' : 'bg-emerald-500';
+    const label    = f.start_time ? f.start_time.slice(0,5) : f.title.slice(0,4);
+    return `
+      <div class="flex flex-col items-center gap-1 flex-1 h-full relative" style="animation-delay:${i*80}ms">
+        <div class="w-full bg-error/10 rounded-t absolute bottom-6 left-0" style="height:88%"></div>
+        <div class="w-full ${fillColor} rounded-t bar-animated absolute bottom-6 left-0 z-10 opacity-90" style="height:0%" data-target="${barH}"></div>
+        <span class="absolute bottom-0 text-[9px] text-on-surface-variant text-center w-full truncate">${label}</span>
+        <span class="absolute -top-5 text-[9px] font-bold text-on-surface-variant/70 w-full text-center z-20">${pct.toFixed(0)}%</span>
+      </div>`;
+  }).join('');
+ 
+  // Animate bars in
+  requestAnimationFrame(() => {
+    container.querySelectorAll('[data-target]').forEach((el, i) => {
+      setTimeout(() => {
+        el.style.height = el.dataset.target + '%';
+      }, i * 80 + 100);
+    });
+  });
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Line Chart
+// ─────────────────────────────────────────────────────────────────────────────
+function renderLineChart(forecasts) {
+  // Aggregate by date
+  const byDate = {};
+  forecasts.forEach(f => {
+    byDate[f.date] = (byDate[f.date] || 0) + (f.predicted_revenue || 0);
+  });
+  const dates  = Object.keys(byDate).sort().slice(0, 7);
+  const values = dates.map(d => byDate[d]);
+  const maxVal = Math.max(...values, 1);
+  const total  = values.reduce((a, b) => a + b, 0);
+ 
+  // Update target badge
+  document.getElementById('revenue-target-badge').textContent =
+    `Target: $${(total / 1000).toFixed(1)}K`;
+ 
+  // Update day labels
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  dates.forEach((d, i) => {
+    const el = document.getElementById(`day-label-${i}`);
+    if (el) el.textContent = new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+  });
+ 
+  // Build SVG path across 400×200 canvas
+  const W = 400, H = 180;
+  const pts = values.map((v, i) => {
+    const x = values.length === 1 ? W / 2 : (i / (values.length - 1)) * W;
+    const y = H - (v / maxVal) * H * 0.85 - 10;
+    return [x, y];
+  });
+ 
+  let linePath = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 1; i < pts.length; i++) {
+    const cp1x = (pts[i-1][0] + pts[i][0]) / 2;
+    linePath += ` C${cp1x},${pts[i-1][1]} ${cp1x},${pts[i][1]} ${pts[i][0]},${pts[i][1]}`;
+  }
+  const fillPath = linePath + ` L${pts[pts.length-1][0]},${H+20} L${pts[0][0]},${H+20} Z`;
+ 
+  const lineEl = document.getElementById('line-path');
+  const fillEl = document.getElementById('line-fill');
+  lineEl.setAttribute('d', linePath);
+  fillEl.setAttribute('d', fillPath);
+ 
+  // Reset animation
+  lineEl.style.strokeDasharray  = '2000';
+  lineEl.style.strokeDashoffset = '2000';
+  lineEl.style.animation = 'none';
+  requestAnimationFrame(() => {
+    lineEl.style.animation = 'draw-line 1.5s ease forwards';
+  });
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Forecast Table
+// ─────────────────────────────────────────────────────────────────────────────
+function renderForecastTable(forecasts) {
+  const tbody = document.getElementById('forecast-tbody');
+  const levelColor = {
+    add_screening: 'text-error bg-error/10',
+    high_demand:   'text-[#feb528] bg-[#feb528]/10',
+    adjust_price:  'text-secondary bg-secondary/10',
+    normal:        'text-on-surface-variant bg-surface-container-highest',
+  };
+  const levelLabel = {
+    add_screening: 'Add Screening',
+    high_demand:   'High Demand',
+    adjust_price:  'Adjust Price',
+    normal:        'Normal',
+  };
+  tbody.innerHTML = forecasts.map((f, i) => {
+    const fill    = f.fill_pct || 0;
+    const barColor = fill > 80 ? 'bg-error' : fill > 50 ? 'bg-[#feb528]' : 'bg-emerald-500';
+    const lvl     = f.recommendation_level || 'normal';
+    return `
+      <tr class="hover:bg-surface-container transition-colors slide-in" style="animation-delay:${i * 40}ms">
+        <td class="px-6 py-4">
+          <div class="font-bold text-on-surface">${f.title}</div>
+          <div class="text-[10px] text-on-surface-variant">${f.tmdb_rating ? '★ ' + f.tmdb_rating : ''} ${f.trending_status === 'trending' ? '🔥' : ''}</div>
+        </td>
+        <td class="px-6 py-4 text-on-surface-variant text-xs">
+          ${f.date}<br/><span class="text-[10px]">${f.start_time ? f.start_time.slice(0,5) : ''}</span>
+        </td>
+        <td class="px-6 py-4 text-on-surface-variant text-xs">${f.theater_name}</td>
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-2">
+            <div class="w-20 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+              <div class="${barColor} h-full rounded-full transition-all duration-700" style="width:${Math.min(fill,100)}%"></div>
+            </div>
+            <span class="text-[11px] font-bold">${fill.toFixed(0)}%</span>
+          </div>
+        </td>
+        <td class="px-6 py-4 font-bold text-on-surface">${f.predicted_occupancy ? f.predicted_occupancy.toFixed(1) + '%' : '—'}</td>
+        <td class="px-6 py-4 font-bold text-primary">${f.predicted_revenue ? '$' + f.predicted_revenue.toLocaleString() : '—'}</td>
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 rounded text-[10px] font-black tracking-wider ${levelColor[lvl] || levelColor.normal}">${levelLabel[lvl] || lvl}</span>
+        </td>
+      </tr>`;
+  }).join('');
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Forecasting Engine (demo simulate)
+// ─────────────────────────────────────────────────────────────────────────────
+async function runForecastingEngine() {
+  const btn     = document.getElementById('run-forecast-btn');
+  const spinner = document.getElementById('forecast-spinner');
+  const icon    = document.getElementById('forecast-btn-icon');
+  const label   = document.getElementById('forecast-btn-text');
+  const sideBtn = document.getElementById('sidebar-run-btn');
+ 
+  btn.disabled = true;
+  sideBtn.disabled = true;
+  spinner.style.display = 'inline-block';
+  icon.style.display = 'none';
+  label.textContent = 'Running engine…';
+  btn.classList.add('opacity-80');
+ 
+  // Simulate network delay
+  await new Promise(r => setTimeout(r, 2200));
+ 
+  // Slightly randomize predictions for the "fresh run" feel
+  const fresh = DEMO_FORECASTS.map(f => ({
+    ...f,
+    predicted_occupancy: Math.min(100, f.predicted_occupancy + (Math.random() * 4 - 2)),
+    predicted_revenue:   Math.round(f.predicted_revenue * (0.97 + Math.random() * 0.06)),
+    fill_pct: f.fill_pct + Math.round(Math.random() * 3 - 1),
+  }));
+ 
+  renderForecastTable(fresh);
+  renderBarChart(fresh);
+  renderLineChart(fresh);
+ 
+  forecastsGenerated = true;
+  btn.disabled = false;
+  sideBtn.disabled = false;
+  spinner.style.display = 'none';
+  icon.style.display = 'inline';
+  label.textContent = 'Re-run Engine';
+  btn.classList.remove('opacity-80');
+ 
+  showToast('Forecasting complete — 7 showtimes updated', 'success');
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Alerts
+// ─────────────────────────────────────────────────────────────────────────────
+const ALERT_CONFIG = {
+  near_sold_out:  { badge: 'CRITICAL', borderColor: 'border-error',             badgeColor: 'bg-error/20 text-error',                         suggestion: 'ADD SCREENING',   icon: 'add_circle' },
+  low_occupancy:  { badge: 'WARNING',  borderColor: 'border-tertiary-container', badgeColor: 'bg-[#feb528]/20 text-[#feb528]',                 suggestion: 'APPLY DISCOUNT',  icon: 'local_offer' },
+  price_optimize: { badge: 'INSIGHT',  borderColor: 'border-secondary',          badgeColor: 'bg-secondary/20 text-secondary',                 suggestion: 'ADJUST PRICE',    icon: 'price_change' },
+};
+ 
+function getActiveCount() {
+  return alerts.filter(a => !a.resolved).length;
+}
+ 
+function updateAlertBadges() {
+  const count = getActiveCount();
+  const badge = document.getElementById('alert-count-badge');
+  const sideCount = document.getElementById('sidebar-alert-count');
+  const notifBadge = document.getElementById('notif-badge');
+ 
+  if (count === 0) {
+    badge.textContent = '✓ All resolved';
+    badge.className = 'ml-2 bg-emerald-500/20 text-emerald-400 text-xs font-black px-2.5 py-1 rounded';
+    sideCount.style.display = 'none';
+    notifBadge.style.display = 'none';
+  } else {
+    badge.textContent = `${count} active`;
+    badge.className = 'ml-2 bg-error/20 text-error text-xs font-black px-2.5 py-1 rounded';
+    sideCount.textContent = count;
+    sideCount.style.display = '';
+    notifBadge.style.display = '';
+  }
+ 
+  // Also update stats card active alerts count
+  const statAlerts = document.querySelector('#stats-grid .text-error, #stats-grid .text-on-surface-variant');
+  // Re-render stats with updated count
+  renderStats({ ...DEMO_STATS, active_alerts: count });
+}
+ 
+function renderAlerts() {
+  const grid = document.getElementById('alerts-grid');
+  const active = alerts.filter(a => !a.resolved);
+ 
+  if (active.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-2 text-center py-16 text-on-surface-variant">
+        <span class="material-symbols-outlined text-5xl text-emerald-500/60 block mb-3" style="font-variation-settings:'FILL' 1">check_circle</span>
+        <p class="font-bold text-lg text-emerald-400">All clear — no active alerts</p>
+        <p class="text-sm mt-1">The forecasting engine is monitoring all showtimes.</p>
+      </div>`;
+    return;
+  }
+ 
+  grid.innerHTML = active.map(a => {
+    const cfg = ALERT_CONFIG[a.alert_type] || ALERT_CONFIG.price_optimize;
+    return `
+      <div id="alert-card-${a.alert_id}" class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 ${cfg.borderColor} hover:bg-surface-container-high transition-all duration-300 relative group">
+        <div class="flex justify-between items-start mb-4">
+          <div class="${cfg.badgeColor} text-[10px] font-black px-2 py-1 rounded">${cfg.badge}</div>
+          <span class="text-[10px] text-on-surface-variant font-bold">${a.date} ${a.start_time ? a.start_time.slice(0,5) : ''}</span>
+        </div>
+        <h3 class="text-base font-bold font-headline mb-1">${a.title}</h3>
+        <p class="text-sm text-on-surface-variant mb-4 leading-relaxed">${a.message}</p>
+        <div class="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+          <span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">⚡ ${cfg.suggestion}</span>
+          <button onclick="resolveAlert(${a.alert_id})" class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded transition-all">
+            <span class="material-symbols-outlined text-sm" style="font-size:14px">check</span>
+            Resolve
           </button>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-surface-container-high/50 text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-bold">
-              <tr>
-                <th class="px-6 py-4">Movie</th>
-                <th class="px-6 py-4">Date / Time</th>
-                <th class="px-6 py-4">Theater</th>
-                <th class="px-6 py-4">Current Fill</th>
-                <th class="px-6 py-4">Predicted Occ</th>
-                <th class="px-6 py-4">Predicted Rev</th>
-                <th class="px-6 py-4">Level</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-variant/5">
-              ${forecasts.slice(0, 15).map(f => {
-                const levelColor = {add_screening:'text-error', high_demand:'text-tertiary-container', adjust_price:'text-secondary', normal:'text-on-surface-variant'}[f.recommendation_level] || 'text-on-surface-variant';
-                const fillPct = f.fill_pct || 0;
-                return `
-                  <tr class="hover:bg-surface-container transition-colors">
-                    <td class="px-6 py-4 font-bold text-on-surface">${f.title}</td>
-                    <td class="px-6 py-4 text-on-surface-variant">${f.date}<br/><span class="text-[10px]">${f.start_time ? f.start_time.slice(0,5) : ''}</span></td>
-                    <td class="px-6 py-4 text-on-surface-variant">${f.theater_name}</td>
-                    <td class="px-6 py-4">
-                      <div class="flex items-center gap-2">
-                        <div class="w-20 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
-                          <div class="${fillPct>80?'bg-error':fillPct>50?'bg-tertiary-container':'bg-emerald-500'} h-full rounded-full" style="width:${Math.min(fillPct,100)}%"></div>
-                        </div>
-                        <span class="text-[11px]">${fillPct.toFixed(0)}%</span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 font-bold">${f.predicted_occupancy ? f.predicted_occupancy.toFixed(1)+'%' : '—'}</td>
-                    <td class="px-6 py-4 font-bold text-primary">${f.predicted_revenue ? '$'+f.predicted_revenue.toLocaleString() : '—'}</td>
-                    <td class="px-6 py-4 text-[10px] font-black uppercase tracking-wider ${levelColor}">${(f.recommendation_level||'').replace('_',' ')}</td>
-                  </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>`;
-    }
-  } catch(e) { console.error('Forecast load error', e); }
+      </div>`;
+  }).join('');
 }
-
-async function runForecasting() {
-  try {
-    const res = await fetch(`${API}/admin/forecasts/run`, { method: 'POST', headers: authHeaders() });
-    if (res.ok) { alert('Forecasting engine complete! Refreshing data…'); loadForecasts(); loadAlerts(); }
-    else { const d = await res.json(); alert(d.detail || 'Error running forecasting.'); }
-  } catch(e) { alert('Network error.'); }
-}
-
-// ── Alerts ────────────────────────────────────────────────────────────────────
-const alertsGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
-
-async function loadAlerts() {
-  try {
-    const res = await fetch(`${API}/admin/alerts`, { headers: authHeaders() });
-    if (!res.ok) return;
-    const alerts = await res.json();
-    if (!alertsGrid) return;
-    if (!alerts.length) {
-      alertsGrid.innerHTML = '<div class="col-span-3 text-center text-on-surface-variant py-8">No active alerts. System is running smoothly.</div>';
-      return;
-    }
-    alertsGrid.innerHTML = alerts.slice(0, 6).map(a => {
-      const isHigh = a.alert_type === 'near_sold_out';
-      const borderColor = isHigh ? 'border-error' : 'border-tertiary-container';
-      const badgeColor  = isHigh ? 'bg-error/20 text-error' : 'bg-tertiary-container/20 text-tertiary-container';
-      const badge       = isHigh ? 'CRITICAL' : 'WARNING';
-      const suggestion  = a.alert_type === 'near_sold_out' ? 'ADD SCREENING' : 'ADJUST PRICE';
-      return `
-        <div class="bg-[#1c1b1b] p-6 rounded-lg border-l-4 ${borderColor} hover:bg-surface-container-high transition-all duration-300 relative group ${a.resolved ? 'opacity-50' : ''}">
-          <div class="flex justify-between items-start mb-4">
-            <div class="${badgeColor} text-[10px] font-black px-2 py-1 rounded">${badge}</div>
-            <span class="text-[10px] text-on-surface-variant font-bold">${a.date} ${a.start_time ? a.start_time.slice(0,5) : ''}</span>
-          </div>
-          <h3 class="text-base font-bold font-headline mb-1">${a.title}</h3>
-          <p class="text-sm text-on-surface-variant mb-4">${a.message || ''}</p>
-          <div class="flex items-center justify-between mt-auto">
-            <span class="text-[10px] font-bold tracking-widest text-[#00d4ff]">SUGGESTION: ${suggestion}</span>
-            ${!a.resolved ? `<button onclick="resolveAlert(${a.alert_id}, this)" class="text-xs text-on-surface-variant hover:text-primary underline transition-all">Resolve</button>` : '<span class="text-[10px] text-on-surface-variant">Resolved</span>'}
-          </div>
-        </div>`;
-    }).join('');
-  } catch(e) {}
-}
-
-async function resolveAlert(id, btn) {
-  btn.disabled = true;
-  try {
-    await fetch(`${API}/admin/alerts/${id}/resolve`, { method: 'POST', headers: authHeaders() });
-    loadAlerts();
-  } catch(e) { btn.disabled = false; }
-}
-
-const dismissAllBtn = document.querySelector('button.text-xs.font-bold.text-primary');
-if (dismissAllBtn) dismissAllBtn.addEventListener('click', async () => {
-  const res = await fetch(`${API}/admin/alerts`, { headers: authHeaders() });
-  const alerts = await res.json();
-  for (const a of alerts.filter(a => !a.resolved)) {
-    await fetch(`${API}/admin/alerts/${a.alert_id}/resolve`, { method: 'POST', headers: authHeaders() });
+ 
+function resolveAlert(id) {
+  const card = document.getElementById(`alert-card-${id}`);
+  if (card) {
+    card.classList.add('resolving');
+    setTimeout(() => {
+      const alert = alerts.find(a => a.alert_id === id);
+      if (alert) alert.resolved = true;
+      renderAlerts();
+      updateAlertBadges();
+      showToast('Alert resolved successfully', 'success');
+    }, 380);
   }
-  loadAlerts();
-});
-
-// ── Init ────────────────────────────────────────────────────────────────────
-loadStats();
-loadForecasts();
-loadAlerts();
+}
+ 
+function dismissAllAlerts() {
+  const active = alerts.filter(a => !a.resolved);
+  if (active.length === 0) { showToast('No active alerts to dismiss', 'info'); return; }
+ 
+  // Stagger fade out
+  active.forEach((a, i) => {
+    setTimeout(() => {
+      const card = document.getElementById(`alert-card-${a.alert_id}`);
+      if (card) card.classList.add('resolving');
+    }, i * 120);
+  });
+ 
+  setTimeout(() => {
+    alerts.forEach(a => a.resolved = true);
+    renderAlerts();
+    updateAlertBadges();
+    showToast(`${active.length} alerts dismissed`, 'success');
+  }, active.length * 120 + 400);
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────────────────────
+function init() {
+  renderStats(DEMO_STATS);
+  renderBarChart(DEMO_FORECASTS);
+  renderLineChart(DEMO_FORECASTS);
+  renderAlerts();
+  updateAlertBadges();
+}
+ 
+init();
 </script>
-</body></html>
+</body>
+</html>

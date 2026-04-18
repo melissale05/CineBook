@@ -449,6 +449,93 @@ async function cancelBooking(id, btn) {
 // ── Recommendations preview ──────────────────────────────────────────────────
 const recGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-4');
 
+async function loadUsers() {
+    const tbody = document.getElementById('users-table-body');
+    if (!tbody) return;
+
+    try {
+        const res = await fetch(`${API}/admin/users`, { headers: authHeaders() });
+        const users = await res.json();
+
+        tbody.innerHTML = users.map(u => `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container-high transition-colors">
+                <td class="py-4 px-6 font-bold text-on-surface">${u.name}</td>
+                <td class="py-4 px-6 text-on-surface-variant">${u.email}</td>
+                <td class="py-4 px-6 text-center">
+                    <span class="px-2 py-1 rounded text-[10px] font-black ${u.role === 'admin' ? 'bg-primary/20 text-primary' : 'bg-secondary/20 text-secondary'}">
+                        ${u.role.toUpperCase()}
+                    </span>
+                </td>
+                <td class="py-4 px-6 text-on-surface-variant">${u.favorite_genre || '—'}</td>
+                <td class="py-4 px-6 text-right font-mono text-tertiary-container">${u.loyalty_points}</td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error("Error loading users:", e);
+    }
+}
+
+// Call the function on page load
+loadUsers();
+
+// Add this inside your existing <script> tag at the very bottom
+  async function loadAdminUserList() {
+    // Only run this if we are an admin
+    if (role !== 'admin') return;
+
+    const tableHeader = document.querySelector('thead tr');
+    const tableTitle = document.querySelector('h2');
+    const tabButton = document.querySelector('.pb-4.text-primary');
+
+    // 1. Change the Labels
+    if (tableTitle) tableTitle.textContent = "System User Management";
+    if (tabButton) tabButton.innerHTML = `All Registered Users <span class="ml-2 px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded" id="user-count">...</span>`;
+    
+    // 2. Change Table Headers to match User Data
+    if (tableHeader) {
+        tableHeader.innerHTML = `
+            <th class="px-8 py-5">User Name</th>
+            <th class="px-8 py-5">Email</th>
+            <th class="px-8 py-5 text-center">Role</th>
+            <th class="px-8 py-5">Joined Date</th>
+            <th class="px-8 py-5 text-right">Points</th>
+        `;
+    }
+
+    // 3. Fetch from your /admin/users endpoint
+    try {
+        const res = await fetch(`${API}/admin/users`, { headers: authHeaders() });
+        const users = await res.json();
+        
+        const userCountEl = document.getElementById('user-count');
+        if (userCountEl) userCountEl.textContent = users.length;
+
+        tbody.innerHTML = users.map(u => `
+            <tr class="hover:bg-surface-container-low transition-colors group">
+                <td class="px-8 py-6 font-headline font-bold text-on-surface">${u.name}</td>
+                <td class="px-8 py-6 text-on-surface-variant text-sm">${u.email}</td>
+                <td class="px-8 py-6 text-center">
+                    <span class="px-2 py-1 rounded text-[10px] font-black ${u.role === 'admin' ? 'bg-primary/20 text-primary' : 'bg-secondary/20 text-secondary'}">
+                        ${u.role.toUpperCase()}
+                    </span>
+                </td>
+                <td class="px-8 py-6 text-on-surface-variant text-xs">${u.created_at.split('T')[0]}</td>
+                <td class="px-8 py-6 text-right font-headline font-bold text-primary">${u.loyalty_points}</td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-error">Failed to load admin user list.</td></tr>';
+    }
+}
+
+// Update your page load logic:
+if (role === 'admin') {
+    loadAdminUserList();
+} else {
+    loadBookings();
+}
+
+
 async function loadRecs() {
   if (!recGrid || role !== 'customer') return;
   try {
